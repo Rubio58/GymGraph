@@ -3,17 +3,39 @@ GymGraph - Aplicación de seguimiento fitness integral
 Autores: Huilin Jin, Arkaitz Cambra, Andrés Salamanca
 """
 
+import os
+import sys
 from flask import Flask
 from flask_cors import CORS
 from config import Config
 
 
+def get_resource_path(relative_path):
+    """
+    Obtiene la ruta correcta del recurso, funciona tanto con PyInstaller como en desarrollo.
+    """
+    if getattr(sys, 'frozen', False):
+        # Si está empaquetado con PyInstaller
+        base_path = sys._MEIPASS
+    else:
+        # Si está en desarrollo
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    
+    return os.path.join(base_path, relative_path)
+
+
 def create_app(config_class=Config):
     """Factory de la aplicación Flask."""
+    # Obtener rutas correctas para templates y static
+    template_dir = get_resource_path('templates')
+    static_dir = get_resource_path('static')
+    
     app = Flask(__name__, 
-                template_folder='../templates',
-                static_folder='../static')
+                template_folder=template_dir,
+                static_folder=static_dir)
     app.config.from_object(config_class)
+    
+    CORS(app)
     
     CORS(app)
     
