@@ -1,56 +1,139 @@
 #!/usr/bin/env python3
 """
-Script para compilar GymGraph a un ejecutable .exe con PyInstaller
-Uso: python build_exe.py
+Script para compilar GymGraph a ejecutables con PyInstaller
+Multiplataforma: Windows (.exe), Linux (binario), macOS (app bundle)
+Uso: python build_exe.py [--windows|--linux|--mac|--all]
 """
 
 import subprocess
 import sys
 import os
+import platform
 from pathlib import Path
 
-def build_exe():
+
+def get_platform():
+    """Detectar SO actual"""
+    system = platform.system()
+    if system == "Windows":
+        return "windows"
+    elif system == "Darwin":
+        return "mac"
+    else:
+        return "linux"
+
+
+def build_exe(target_platform=None):
     """Compilar la aplicación a ejecutable"""
+    
+    if target_platform is None:
+        target_platform = get_platform()
     
     # Rutas
     project_root = Path(__file__).parent
     dist_dir = project_root / "dist"
     
-    print("🏗️  Compilando GymGraph a ejecutable...")
+    print(f"🏗️  Compilando GymGraph para {target_platform.upper()}...")
     print(f"📁 Proyecto: {project_root}")
     print(f"📦 Salida: {dist_dir}")
     
-    # Comando de PyInstaller
+    # Configuración base
     cmd = [
         "pyinstaller",
         "--name=GymGraph",
         "--onefile",  # Un único archivo ejecutable
-        "--windowed",  # Sin ventana de consola (opcional, remove para debug)
-        "--icon=NONE",
-        "--add-data=templates:templates",  # Incluir carpeta templates
-        "--add-data=static:static",  # Incluir carpeta static
-        "--add-data=database:database",  # Incluir carpeta database
+        "--add-data", f"templates{os.pathsep}templates",
+        "--add-data", f"static{os.pathsep}static",
+        "--add-data", f"database{os.pathsep}database",
         "--hidden-import=flask",
         "--hidden-import=flask_cors",
         "--collect-all=flask",
         "--collect-all=werkzeug",
-        str(project_root / "run.py"),  # Archivo principal
     ]
     
-    print(f"\n🔨 Ejecutando: {' '.join(cmd)}\n")
+    # Configuración específica por SO
+    if target_platform == "windows":
+        cmd.extend([
+            "--windowed",  # Sin ventana de consola
+            "--icon=NONE",
+        ])
+        output_name = "GymGraph.exe"
+    elif target_platform == "linux":
+        cmd.append("--console")  # Con terminal
+        output_name = "GymGraph"
+    elif target_platform == "mac":
+        cmd.extend([
+            "--windowed",
+            "--osx-bundle-identifier=com.gymgraph.app",
+        ])
+        output_name = "GymGraph.app"
+    
+    cmd.append(str(project_root / "run.py"))
+    
+    print(f"\n🔨 Ejecutando PyInstaller...\n")
     
     result = subprocess.run(cmd, cwd=str(project_root))
     
     if result.returncode == 0:
         print("\n✅ ¡Compilación exitosa!")
-        exe_path = dist_dir / "GymGraph.exe"
-        print(f"📍 Ejecutable: {exe_path}")
-        print(f"\n💡 Ahora puedes:")
-        print(f"   1. Compartir {exe_path} con tus amigos")
-        print(f"   2. Ellos solo necesitan hacer doble clic para ejecutar")
+        
+        if target_platform == "windows":
+            exe_path = dist_dir / "GymGraph.exe"
+            print(f"📍 Ejecutable: {exe_path}")
+            print(f"\n💡 Para compartir:")
+            print(f"   - Envía {exe_path} a tus amigos")
+            print(f"   - Ellos hacen doble clic y ¡funciona!")
+            
+        elif target_platform == "linux":
+            exe_path = dist_dir / "GymGraph"
+            print(f"📍 Ejecutable: {exe_path}")
+            print(f"\n💡 Para usar:")
+            print(f"   chmod +x {exe_path}")
+            print(f"   ./{exe_path}")
+            print(f"\n💡 Para compartir:")
+            print(f"   - Comprime: tar -czf GymGraph-linux.tar.gz {exe_path}")
+            print(f"   - O simplemente copia el archivo")
+            
+        elif target_platform == "mac":
+            app_path = dist_dir / "GymGraph.app"
+            print(f"📍 App: {app_path}")
+            print(f"\n💡 Para usar:")
+            print(f"   - Doble clic en GymGraph.app")
+            print(f"   - O: open {app_path}")
     else:
         print("\n❌ Error durante la compilación")
         sys.exit(1)
 
+
+def main():
+    """Función principal"""
+    if len(sys.argv) > 1:
+        arg = sys.argv[1].lower()
+        if arg == "--all":
+            print("🚀 Compilando para TODOS los SO (requiere compiladores específicos)...\n")
+            for plat in ["windows", "linux", "mac"]:
+                print(f"\n{'='*60}")
+                print(f"Compilando para {plat.upper()}")
+                print(f"{'='*60}")
+                try:
+                    build_exe(plat)
+                except Exception as e:
+                    print(f"⚠️  Error compilando para {plat}: {e}")
+        elif arg in ["--windows", "--linux", "--mac"]:
+            platform_map = {
+                "--windows": "windows",
+                "--linux": "linux",
+                "--mac": "mac"
+            }
+            build_exe(platform_map[arg])
+        else:
+            print("Uso: python build_exe.py [--windows|--linux|--mac|--all]")
+            print(f"\nPor defecto usa: --{get_platform()}")
+            sys.exit(1)
+    else:
+        # Compilar para el SO actual
+        build_exe()
+
+
 if __name__ == "__main__":
-    build_exe()
+    main()
