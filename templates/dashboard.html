@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - GymGraph{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h1>Dashboard</h1>
+    <p class="subtitle">Resumen de tu actividad y progreso</p>
+    
+    <div class="dashboard-grid">
+        <!-- Resumen del día -->
+        <div class="card">
+            <h3>📅 Hoy</h3>
+            <div class="today-summary" id="today-summary">
+                <div class="stat">
+                    <span class="stat-label">Calorías</span>
+                    <span class="stat-value" id="today-calories">--</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Proteína</span>
+                    <span class="stat-value" id="today-protein">--g</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Agua</span>
+                    <span class="stat-value" id="today-water">--L</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accesos rápidos -->
+        <div class="card">
+            <h3>⚡ Acciones rápidas</h3>
+            <div class="quick-actions">
+                <a href="{{ url_for('workout.workout_session') }}" class="action-btn">
+                    <span>🏋️</span> Iniciar entrenamiento
+                </a>
+                <a href="{{ url_for('nutrition.index') }}" class="action-btn">
+                    <span>🍽️</span> Registrar comida
+                </a>
+                <a href="{{ url_for('measurement.new_measurement') }}" class="action-btn">
+                    <span>📏</span> Añadir medidas
+                </a>
+                <a href="{{ url_for('selfcare.index') }}" class="action-btn">
+                    <span>💆</span> Autocuidado
+                </a>
+            </div>
+        </div>
+
+        <!-- Último entrenamiento -->
+        <div class="card">
+            <h3>🏋️ Último entrenamiento</h3>
+            <div id="last-workout">
+                <p class="text-muted">Sin entrenamientos recientes</p>
+            </div>
+            <a href="{{ url_for('workout.history') }}" class="link">Ver historial →</a>
+        </div>
+
+        <!-- Peso actual -->
+        <div class="card">
+            <h3>⚖️ Peso</h3>
+            <div id="current-weight">
+                <p class="big-number">--</p>
+                <p class="text-muted">kg</p>
+            </div>
+            <a href="{{ url_for('measurement.index') }}" class="link">Ver evolución →</a>
+        </div>
+    </div>
+
+    <!-- Sección de gráficas -->
+    <section class="charts-section">
+        <h2>📊 Gráficas</h2>
+        <p class="text-muted">
+            <a href="{{ url_for('charts.index') }}">Ver análisis detallado y correlaciones →</a>
+        </p>
+        
+        <div class="chart-placeholder">
+            <div class="chart-card">
+                <h4>Evolución del peso</h4>
+                <div class="chart-container" id="weight-chart">
+                    <canvas id="weightChartCanvas"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h4>Calorías semanales</h4>
+                <div class="chart-container" id="calories-chart">
+                    <canvas id="caloriesChartCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Cargar datos del día
+    loadTodaySummary();
+    loadLastWeight();
+    loadLastWorkout();
+    loadCharts();
+});
+
+async function loadLastWorkout() {
+    try {
+        const response = await fetch('/workout/api/sessions/latest');
+        const data = await response.json();
+        
+        const container = document.getElementById('last-workout');
+        if (data.session_date) {
+            container.innerHTML = `
+                <p class="big-number">${data.session_date}</p>
+                <p class="text-muted">${data.start_time ? 'Hora: ' + data.start_time.substring(0, 5) : ''}</p>
+            `;
+        } else {
+            container.innerHTML = '<p class="text-muted">Sin entrenamientos recientes</p>';
+        }
+    } catch (error) {
+        console.error('Error cargando último entrenamiento:', error);
+    }
+}
+
+async function loadTodaySummary() {
+    try {
+        const today = new Date().toISOString().split('T')[0];
+        const response = await fetch(`/nutrition/api/logs/${today}`);
+        const data = await response.json();
+        
+        if (data.totals) {
+            document.getElementById('today-calories').textContent = 
+                Math.round(data.totals.total_calories || 0);
+            document.getElementById('today-protein').textContent = 
+                Math.round(data.totals.total_protein || 0) + 'g';
+        }
+        
+        const waterResponse = await fetch(`/nutrition/api/water/${today}`);
+        const waterData = await waterResponse.json();
+        document.getElementById('today-water').textContent = 
+            (waterData.liters || 0).toFixed(1) + 'L';
+    } catch (error) {
+        console.error('Error cargando resumen:', error);
+    }
+}
+
+async function loadLastWeight() {
+    try {
+        const response = await fetch('/measurement/api/latest');
+        const data = await response.json();
+        
+        const weightEl = document.querySelector('#current-weight .big-number');
+        if (data.weight_kg !== null && data.weight_kg !== undefined) {
+            weightEl.textContent = parseFloat(data.weight_kg).toFixed(1);
+        } else {
+            weightEl.textContent = '--';
+        }
+    } catch (error) {
+        console.error('Error cargando peso:', error);
+        document.querySelector('#current-weight .big-number').textContent = '--';
+    }
+}
+
+async function loadCharts() {
+    try {
+        // Gráfica de peso
+        const weightResponse = await fetch('/measurement/api/weight-history?days=30');
+        const weightData = await weightResponse.json();
+        
+        if (weightData.length > 0) {
+            const ctx = document.getElementById('weightChartCanvas').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: weightData.map(d => d.measurement_date),
+                    datasets: [{
+                        label: 'Peso (kg)',
+                        data: weightData.map(d => d.weight_kg),
+                        borderColor: '#C67B5C',
+                        backgroundColor: 'rgba(198, 123, 92, 0.15)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#C67B5C',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(212, 197, 181, 0.3)' },
+                            ticks: { color: '#6B6560' }
+                        },
+                        y: {
+                            grid: { color: 'rgba(212, 197, 181, 0.3)' },
+                            ticks: { color: '#6B6560' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Gráfica de calorías semanales
+        const caloriesResponse = await fetch('/nutrition/api/calories-history?days=7');
+        const caloriesData = await caloriesResponse.json();
+        
+        if (caloriesData.length > 0) {
+            const ctx2 = document.getElementById('caloriesChartCanvas').getContext('2d');
+            new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: caloriesData.map(d => {
+                        const date = new Date(d.log_date);
+                        return date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' });
+                    }),
+                    datasets: [{
+                        label: 'Calorías',
+                        data: caloriesData.map(d => d.calories),
+                        backgroundColor: 'rgba(143, 165, 132, 0.7)',
+                        borderColor: '#8FA584',
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#6B6560' }
+                        },
+                        y: {
+                            grid: { color: 'rgba(212, 197, 181, 0.3)' },
+                            ticks: { color: '#6B6560' }
+                        }
+                    }
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error cargando gráficas:', error);
+    }
+}
+</script>
+{% endblock %}

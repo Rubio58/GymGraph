@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}GymGraph - Tu seguimiento fitness integral{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1>¡Bienvenido a <span class="highlight">GymGraph</span>!</h1>
+    <p>Tu aplicación de escritorio para el seguimiento fitness integral</p>
+</div>
+
+<div class="quick-access-grid">
+    <a href="{{ url_for('workout.plans') }}" class="quick-card">
+        <span class="quick-icon">🏋️</span>
+        <h3>Entrenamiento</h3>
+        <p>Registra ejercicios, series, pesos y repeticiones</p>
+    </a>
+    <a href="{{ url_for('nutrition.index') }}" class="quick-card">
+        <span class="quick-icon">🥗</span>
+        <h3>Nutrición</h3>
+        <p>Controla calorías, macros y consumo de agua</p>
+    </a>
+    <a href="{{ url_for('measurement.index') }}" class="quick-card">
+        <span class="quick-icon">📊</span>
+        <h3>Medidas</h3>
+        <p>Sigue tu peso, medidas y composición corporal</p>
+    </a>
+    <a href="{{ url_for('selfcare.index') }}" class="quick-card">
+        <span class="quick-icon">😴</span>
+        <h3>Autocuidado</h3>
+        <p>Monitorea sueño, pasos y bienestar</p>
+    </a>
+</div>
+
+<section class="section">
+    <h2 class="section-title">¿Qué puedes hacer con GymGraph?</h2>
+    <div class="benefits-grid">
+        <div class="benefit-card">
+            <h4>📈 Visualización Gráfica</h4>
+            <p>Ve tu progreso a través del tiempo con gráficas claras e intuitivas.</p>
+        </div>
+        <div class="benefit-card">
+            <h4>🔗 Todo en un lugar</h4>
+            <p>Deja de usar múltiples apps. Centraliza todo tu seguimiento fitness.</p>
+        </div>
+        <div class="benefit-card">
+            <h4>💻 100% Local</h4>
+            <p>Tus datos siempre en tu ordenador. Sin cuentas ni servidores externos.</p>
+        </div>
+        <div class="benefit-card">
+            <h4>🎯 Objetivos claros</h4>
+            <p>Define metas y compara tu avance real vs objetivo.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

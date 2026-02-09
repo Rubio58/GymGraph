@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Registro de Sueño - GymGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>😴 Registro de Sueño</h1>
+        <p class="subtitle">Historial completo de tus horas de descanso</p>
+    </div>
+    <a href="{{ url_for('selfcare.index') }}" class="btn">← Volver</a>
+</div>
+
+<!-- Formulario para nuevo registro -->
+<div class="card" style="max-width: 500px; margin-bottom: 2rem;">
+    <h3>Añadir registro</h3>
+    <form action="{{ url_for('selfcare.sleep') }}" method="POST">
+        <div class="form-row">
+            <div class="form-group">
+                <label>Fecha</label>
+                <input type="date" name="log_date" value="{{ today or '' }}" required>
+            </div>
+            <div class="form-group">
+                <label>Horas dormidas</label>
+                <input type="number" name="hours_slept" step="0.5" min="0" max="24" placeholder="7.5" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Calidad del sueño (1-10)</label>
+            <select name="sleep_quality">
+                {% for i in range(1, 11) %}
+                <option value="{{ i }}" {% if i == 7 %}selected{% endif %}>{{ i }}/10</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Notas (opcional)</label>
+            <textarea name="notes" rows="2" placeholder="¿Cómo dormiste? ¿Algo que destacar?"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar registro</button>
+    </form>
+</div>
+
+<!-- Historial -->
+<div class="card">
+    <h3>📋 Historial de sueño</h3>
+    {% if logs %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Horas</th>
+                <th>Calidad</th>
+                <th>Notas</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.log_date }}</td>
+                <td><strong>{{ log.hours_slept }}h</strong></td>
+                <td><span class="badge">{{ log.sleep_quality }}/10</span></td>
+                <td class="text-muted">{{ log.notes or '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p>No hay registros de sueño todavía</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

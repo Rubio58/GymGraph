@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Plan - GymGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Editar Plan de Entrenamiento</h1>
+    <a href="{{ url_for('workout.plans') }}" class="btn">← Volver</a>
+</div>
+
+<div class="edit-plan-container">
+    <div class="card">
+        <h3>Días de entrenamiento</h3>
+        <p class="text-muted">Añade días y ejercicios a tu plan</p>
+        
+        <div id="days-container">
+            <!-- Los días se cargan dinámicamente -->
+        </div>
+        
+        <button class="btn btn-primary" onclick="addDay()">+ Añadir día</button>
+    </div>
+    
+    <div class="card">
+        <h3>Ejercicios disponibles</h3>
+        <div class="exercises-list">
+            {% for exercise in exercises %}
+            <div class="exercise-item" draggable="true" data-id="{{ exercise.id }}">
+                <span class="exercise-name">{{ exercise.name }}</span>
+                <span class="badge">{{ exercise.muscle_group }}</span>
+            </div>
+            {% else %}
+            <p class="text-muted">No hay ejercicios disponibles</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="actions" style="margin-top: 2rem;">
+    <a href="{{ url_for('workout.plans') }}" class="btn btn-primary">Guardar y volver</a>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .edit-plan-container {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.5rem;
+    }
+    
+    .exercise-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem;
+        background: var(--bg-secondary);
+        border-radius: var(--radius);
+        margin-bottom: 0.5rem;
+        cursor: grab;
+    }
+    
+    .exercise-item:hover {
+        background: var(--bg-card);
+    }
+    
+    .day-card {
+        background: var(--bg-secondary);
+        border-radius: var(--radius);
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .day-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .day-exercises {
+        min-height: 100px;
+        border: 2px dashed var(--border-color);
+        border-radius: var(--radius);
+        padding: 0.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .edit-plan-container {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const planId = {{ plan_id }};
+let days = [];
+
+document.addEventListener('DOMContentLoaded', loadDays);
+
+async function loadDays() {
+    try {
+        const response = await fetch(`/workout/api/plans/${planId}`);
+        const plan = await response.json();
+        days = plan.days || [];
+        renderDays();
+    } catch (error) {
+        console.error('Error cargando días:', error);
+    }
+}
+
+function renderDays() {
+    const container = document.getElementById('days-container');
+    
+    if (days.length === 0) {
+        container.innerHTML = '<p class="text-muted">No hay días configurados. Añade uno para empezar.</p>';
+        return;
+    }
+    
+    const dayNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    
+    container.innerHTML = days.map(day => `
+        <div class="day-card">
+            <div class="day-header">
+                <h4>${day.name || dayNames[day.day_of_week] || 'Día ' + (day.day_of_week + 1)}</h4>
+                <button class="btn btn-sm btn-danger" onclick="removeDay(${day.id})">×</button>
+            </div>
+            <div class="day-exercises" data-day-id="${day.id}">
+                ${(day.exercises || []).map(ex => `
+                    <div class="exercise-item">
+                        <span>${ex.exercise_name}</span>
+                        <span class="text-muted">${ex.target_sets || '?'}x${ex.target_reps || '?'}</span>
+                    </div>
+                `).join('') || '<p class="text-muted">Arrastra ejercicios aquí</p>'}
+            </div>
+        </div>
+    `).join('');
+}
+
+async function addDay() {
+    const dayOfWeek = days.length % 7;
+    
+    try {
+        const response = await fetch(`/workout/api/plans/${planId}/days`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ day_of_week: dayOfWeek })
+        });
+        
+        if (response.ok) {
+            loadDays();
+        }
+    } catch (error) {
+        console.error('Error añadiendo día:', error);
+    }
+}
+
+async function removeDay(dayId) {
+    // Por ahora solo recargamos
+    loadDays();
+}
+</script>
+{% endblock %}

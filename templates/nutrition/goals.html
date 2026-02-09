@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Objetivos Nutricionales - GymGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Objetivos Nutricionales</h1>
+    <a href="{{ url_for('nutrition.index') }}" class="btn">← Volver</a>
+</div>
+
+<div class="card" style="max-width: 600px;">
+    <p class="text-muted" style="margin-bottom: 1.5rem;">
+        Define tus objetivos diarios para hacer seguimiento de tu nutrición.
+    </p>
+    
+    <form method="POST" action="{{ url_for('nutrition.goals') }}">
+        <div class="form-group">
+            <label for="daily_calories">Calorías diarias (kcal)</label>
+            <input type="number" id="daily_calories" name="daily_calories" 
+                   value="{{ goals.daily_calories if goals else 2000 }}" 
+                   min="0" step="50" placeholder="2000">
+        </div>
+        
+        <h4 style="margin: 1.5rem 0 1rem;">Macronutrientes</h4>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="protein_g">Proteína (g)</label>
+                <input type="number" id="protein_g" name="protein_g" 
+                       value="{{ goals.protein_g if goals else 150 }}" 
+                       min="0" placeholder="150">
+            </div>
+            <div class="form-group">
+                <label for="carbs_g">Carbohidratos (g)</label>
+                <input type="number" id="carbs_g" name="carbs_g" 
+                       value="{{ goals.carbs_g if goals else 250 }}" 
+                       min="0" placeholder="250">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="fat_g">Grasas (g)</label>
+                <input type="number" id="fat_g" name="fat_g" 
+                       value="{{ goals.fat_g if goals else 70 }}" 
+                       min="0" placeholder="70">
+            </div>
+            <div class="form-group">
+                <label for="water_liters">Agua (litros)</label>
+                <input type="number" id="water_liters" name="water_liters" 
+                       value="{{ goals.water_liters if goals else 2.5 }}" 
+                       min="0" step="0.1" placeholder="2.5">
+            </div>
+        </div>
+        
+        <div class="info-box" style="background: var(--bg-secondary); padding: 1rem; border-radius: var(--radius); margin: 1.5rem 0;">
+            <h5>💡 Guía rápida</h5>
+            <ul style="font-size: 0.875rem; color: var(--text-muted); margin: 0.5rem 0 0 1rem;">
+                <li><strong>Perder peso:</strong> Déficit de 300-500 kcal de tu mantenimiento</li>
+                <li><strong>Mantener:</strong> ~30-35 kcal por kg de peso corporal</li>
+                <li><strong>Ganar masa:</strong> Superávit de 200-400 kcal</li>
+                <li><strong>Proteína:</strong> 1.6-2.2g por kg de peso corporal</li>
+            </ul>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Guardar Objetivos</button>
+            <a href="{{ url_for('nutrition.index') }}" class="btn btn-outline">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    @media (max-width: 500px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

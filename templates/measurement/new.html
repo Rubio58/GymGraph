@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevas Medidas - GymGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Registrar Medidas</h1>
+</div>
+
+<div class="card">
+    <form method="POST" class="form">
+        <div class="form-group">
+            <label for="measurement_date">Fecha</label>
+            <input type="date" id="measurement_date" name="measurement_date" 
+                   value="{{ today }}" required>
+        </div>
+        
+        <h4>Composición corporal</h4>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="weight_kg">Peso (kg)</label>
+                <input type="number" id="weight_kg" name="weight_kg" 
+                       step="0.1" placeholder="75.5">
+            </div>
+            <div class="form-group">
+                <label for="body_fat_percentage">% Grasa corporal</label>
+                <input type="number" id="body_fat_percentage" name="body_fat_percentage" 
+                       step="0.1" placeholder="15.0">
+            </div>
+        </div>
+        
+        <h4>Medidas corporales (cm)</h4>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="chest_cm">Pecho</label>
+                <input type="number" id="chest_cm" name="chest_cm" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="waist_cm">Cintura</label>
+                <input type="number" id="waist_cm" name="waist_cm" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="hips_cm">Cadera</label>
+                <input type="number" id="hips_cm" name="hips_cm" step="0.1">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="shoulders_cm">Hombros</label>
+                <input type="number" id="shoulders_cm" name="shoulders_cm" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="neck_cm">Cuello</label>
+                <input type="number" id="neck_cm" name="neck_cm" step="0.1">
+            </div>
+        </div>
+        
+        <h4>Brazos</h4>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="bicep_left_cm">Bíceps izq.</label>
+                <input type="number" id="bicep_left_cm" name="bicep_left_cm" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="bicep_right_cm">Bíceps der.</label>
+                <input type="number" id="bicep_right_cm" name="bicep_right_cm" step="0.1">
+            </div>
+        </div>
+        
+        <h4>Piernas</h4>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="thigh_left_cm">Muslo izq.</label>
+                <input type="number" id="thigh_left_cm" name="thigh_left_cm" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="thigh_right_cm">Muslo der.</label>
+                <input type="number" id="thigh_right_cm" name="thigh_right_cm" step="0.1">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="calf_left_cm">Gemelo izq.</label>
+                <input type="number" id="calf_left_cm" name="calf_left_cm" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="calf_right_cm">Gemelo der.</label>
+                <input type="number" id="calf_right_cm" name="calf_right_cm" step="0.1">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="notes">Notas</label>
+            <textarea id="notes" name="notes" rows="3" 
+                      placeholder="Observaciones adicionales..."></textarea>
+        </div>
+        
+        <div class="form-actions">
+            <a href="{{ url_for('measurement.index') }}" class="btn">Cancelar</a>
+            <button type="submit" class="btn btn-primary">Guardar medidas</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

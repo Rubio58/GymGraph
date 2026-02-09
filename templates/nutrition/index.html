@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+
+{% block title %}Nutrición - GymGraph{% endblock %}
+
+{% block extra_css %}
+<style>
+    .nutrition-actions {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .search-section {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: 1.75rem;
+        margin-bottom: 1.5rem;
+        max-width: 800px;
+        border: 2px solid var(--border-light);
+    }
+    
+    .search-section h3 {
+        color: var(--terracotta);
+        margin-bottom: 1rem;
+    }
+    
+    .search-box {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .search-box input {
+        flex: 1;
+        padding: 0.85rem 1.1rem;
+        border-radius: var(--radius);
+        border: 2px solid var(--border-color);
+        background: white;
+        color: var(--text-primary);
+        font-size: 1rem;
+        max-width: 100%;
+        font-family: inherit;
+    }
+    
+    .search-box input:focus {
+        border-color: var(--terracotta);
+        outline: none;
+    }
+    
+    .search-results {
+        max-height: 280px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    
+    .food-result {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.85rem;
+        background: var(--cream-dark);
+        border-radius: var(--radius);
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        transition: var(--transition);
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        border: 2px solid transparent;
+    }
+    
+    .food-result:hover {
+        background: var(--terracotta);
+        color: white;
+        border-color: var(--terracotta);
+    }
+    
+    .food-result:hover .macros {
+        color: rgba(255,255,255,0.85);
+    }
+    
+    .food-result .name {
+        font-weight: 600;
+    }
+    
+    .food-result .macros {
+        display: flex;
+        gap: 0.75rem;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        flex-wrap: wrap;
+    }
+    
+    .add-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(61, 56, 54, 0.7);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+    }
+    
+    .add-modal.active {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: var(--radius-xl);
+        max-width: 420px;
+        width: 90%;
+        border: 2px solid var(--border-light);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .modal-content h3 {
+        margin-bottom: 1rem;
+        color: var(--terracotta);
+    }
+    
+    .modal-content .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .modal-content input, .modal-content select {
+        width: 100%;
+        padding: 0.85rem;
+        border-radius: var(--radius);
+        border: 2px solid var(--border-color);
+        background: white;
+        color: var(--text-primary);
+        font-family: inherit;
+    }
+    
+    .modal-content input:focus, .modal-content select:focus {
+        border-color: var(--terracotta);
+        outline: none;
+    }
+    
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Nutrición</h1>
+    <span class="date-display">{{ today }}</span>
+</div>
+
+<!-- Acciones arriba -->
+<div class="nutrition-actions">
+    <a href="{{ url_for('nutrition.foods') }}" class="btn">📋 Ver alimentos</a>
+    <a href="{{ url_for('nutrition.new_food') }}" class="btn btn-primary">+ Añadir alimento</a>
+    <a href="{{ url_for('nutrition.goals') }}" class="btn btn-outline">⚙️ Objetivos</a>
+</div>
+
+<!-- Resumen del día -->
+<div class="nutrition-summary">
+    <div class="summary-card">
+        <h4>Calorías</h4>
+        <div class="progress-ring">
+            <span class="value">{{ (totals.total_calories or 0)|int }}</span>
+            <span class="goal">/ {{ (goals.daily_calories or 2000)|int }}</span>
+        </div>
+    </div>
+    <div class="summary-card">
+        <h4>Proteína</h4>
+        <span class="value">{{ (totals.total_protein or 0)|int }}g</span>
+        <span class="goal">/ {{ (goals.protein_g or 150)|int }}g</span>
+    </div>
+    <div class="summary-card">
+        <h4>Carbos</h4>
+        <span class="value">{{ (totals.total_carbs or 0)|int }}g</span>
+        <span class="goal">/ {{ (goals.carbs_g or 250)|int }}g</span>
+    </div>
+    <div class="summary-card">
+        <h4>Grasa</h4>
+        <span class="value">{{ (totals.total_fat or 0)|int }}g</span>
+        <span class="goal">/ {{ (goals.fat_g or 70)|int }}g</span>
+    </div>
+    <div class="summary-card water">
+        <h4>Agua</h4>
+        <span class="value">{{ (water_log.liters if water_log else 0)|round(1) }}L</span>
+        <span class="goal">/ {{ (goals.water_liters or 2.5)|round(1) }}L</span>
+        <button class="btn btn-sm" onclick="addWater(0.25)">+250ml</button>
+    </div>
+</div>
+
+<!-- Buscador de alimentos -->
+<div class="search-section">
+    <h3>🔍 Registrar comida</h3>
+    <div class="search-box">
+        <input type="text" id="food-search" placeholder="Buscar alimento... (ej: pollo, arroz, huevo)" 
+               oninput="searchFood(this.value)">
+    </div>
+    <div id="food-results" class="search-results">
+        <p class="text-muted">Escribe para buscar alimentos</p>
+    </div>
+</div>
+
+<!-- Modal para añadir -->
+<div id="addModal" class="add-modal">
+    <div class="modal-content">
+        <h3 id="modalFoodName">Añadir alimento</h3>
+        <input type="hidden" id="selectedFoodId">
+        <div class="form-group">
+            <label>Cantidad (gramos)</label>
+            <input type="number" id="foodQuantity" value="100" min="1">
+        </div>
+        <div class="form-group">
+            <label>Comida</label>
+            <select id="mealType">
+                <option value="breakfast">🌅 Desayuno</option>
+                <option value="lunch" selected>☀️ Comida</option>
+                <option value="dinner">🌙 Cena</option>
+                <option value="snack">🍎 Snack</option>
+            </select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="confirmAddFood()">Añadir</button>
+            <button class="btn" onclick="closeModal()">Cancelar</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let searchTimeout = null;
+
+function searchFood(query) {
+    clearTimeout(searchTimeout);
+    const results = document.getElementById('food-results');
+    
+    if (query.length < 2) {
+        results.innerHTML = '<p class="text-muted">Escribe al menos 2 caracteres para buscar</p>';
+        return;
+    }
+    
+    results.innerHTML = '<p class="text-muted">Buscando...</p>';
+    
+    searchTimeout = setTimeout(async () => {
+        try {
+            const response = await fetch(`/nutrition/api/foods?q=${encodeURIComponent(query)}`);
+            const foods = await response.json();
+            
+            if (foods.length === 0) {
+                results.innerHTML = '<p class="text-muted">No se encontraron alimentos. <a href="/nutrition/foods/new">Añadir nuevo</a></p>';
+                return;
+            }
+            
+            results.innerHTML = foods.map(food => `
+                <div class="food-result" onclick="openAddModal(${food.id}, '${food.name.replace(/'/g, "\\'")}', ${food.calories}, ${food.protein_g}, ${food.carbs_g}, ${food.fat_g})">
+                    <div>
+                        <span class="name">${food.name}</span>
+                        ${food.brand ? `<span class="text-muted"> - ${food.brand}</span>` : ''}
+                    </div>
+                    <div class="macros">
+                        <span>${food.calories} kcal</span>
+                        <span>P: ${food.protein_g}g</span>
+                        <span>C: ${food.carbs_g}g</span>
+                        <span>G: ${food.fat_g}g</span>
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Error buscando:', error);
+            results.innerHTML = '<p class="text-muted">Error al buscar</p>';
+        }
+    }, 300);
+}
+
+function openAddModal(foodId, foodName, cal, prot, carb, fat) {
+    document.getElementById('selectedFoodId').value = foodId;
+    document.getElementById('modalFoodName').textContent = `Añadir: ${foodName}`;
+    document.getElementById('foodQuantity').value = 100;
+    document.getElementById('addModal').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('addModal').classList.remove('active');
+}
+
+async function confirmAddFood() {
+    const foodId = document.getElementById('selectedFoodId').value;
+    const quantity = document.getElementById('foodQuantity').value;
+    const mealType = document.getElementById('mealType').value;
+    
+    try {
+        await fetch('/nutrition/api/logs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                food_id: parseInt(foodId),
+                quantity: parseFloat(quantity),
+                meal_type: mealType
+            })
+        });
+        closeModal();
+        location.reload();
+    } catch (error) {
+        console.error('Error añadiendo:', error);
+        alert('Error al añadir alimento');
+    }
+}
+
+async function addWater(liters) {
+    try {
+        await fetch('/nutrition/api/water', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ liters: liters })
+        });
+        location.reload();
+    } catch (error) {
+        console.error('Error añadiendo agua:', error);
+    }
+}
+
+// Cerrar modal con Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+});
+</script>
+{% endblock %}

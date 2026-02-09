@@ -1,0 +1,70 @@
+# ============================================
+# GymGraph - Docker Compose
+# Servicios: MySQL, Grafana, Flask App
+# ============================================
+
+services:
+  # Base de datos MySQL
+  db:
+    image: mysql:8.0
+    container_name: gymgraph-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: gymgraph_db
+      MYSQL_USER: gymgraph_user
+      MYSQL_PASSWORD: gymgraph_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Grafana para visualización
+  grafana:
+    image: grafana/grafana:latest
+    container_name: gymgraph-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: false
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Aplicación Flask
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gymgraph-app
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306
+      MYSQL_USER: gymgraph_user
+      MYSQL_PASSWORD: gymgraph_pass
+      MYSQL_DATABASE: gymgraph_db
+      SECRET_KEY: your-secret-key-change-in-production
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
+  grafana_data:

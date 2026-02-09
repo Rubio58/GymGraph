@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Historial de Entrenamientos - GymGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Historial de Entrenamientos</h1>
+    <a href="{{ url_for('workout.workout_session') }}" class="btn btn-primary">+ Nuevo entrenamiento</a>
+</div>
+
+<div class="history-list">
+    {% if sessions %}
+        {% for session in sessions %}
+        <div class="card history-card">
+            <div class="history-header">
+                <h3>{{ session.session_date }}</h3>
+                <span class="badge">
+                    {% if session.start_time and session.end_time %}
+                        {{ session.start_time }} - {{ session.end_time }}
+                    {% else %}
+                        {{ session.start_time or 'Sin hora' }}
+                    {% endif %}
+                </span>
+            </div>
+            <p class="text-muted">{{ session.notes or 'Sin notas' }}</p>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <p>No tienes entrenamientos registrados todavía.</p>
+            <a href="{{ url_for('workout.workout_session') }}" class="btn btn-primary">Registrar mi primer entrenamiento</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

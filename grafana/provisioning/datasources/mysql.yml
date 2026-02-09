@@ -1,0 +1,13 @@
+# Configuración de datasources para Grafana
+apiVersion: 1
+
+datasources:
+  - name: MySQL
+    type: mysql
+    url: db:3306
+    database: gymgraph_db
+    user: gymgraph_user
+    secureJsonData:
+      password: gymgraph_pass
+    isDefault: true
+    editable: true

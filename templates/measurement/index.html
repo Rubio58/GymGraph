@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Medidas Corporales - GymGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Medidas Corporales</h1>
+    <a href="{{ url_for('measurement.new_measurement') }}" class="btn btn-primary">+ Añadir medidas</a>
+</div>
+
+{% if latest %}
+<div class="card current-stats">
+    <h3>Últimas medidas ({{ latest.measurement_date }})</h3>
+    <div class="stats-grid">
+        {% if latest.weight_kg %}
+        <div class="stat">
+            <span class="stat-label">Peso</span>
+            <span class="stat-value">{{ latest.weight_kg }} kg</span>
+        </div>
+        {% endif %}
+        {% if latest.body_fat_percentage %}
+        <div class="stat">
+            <span class="stat-label">% Grasa</span>
+            <span class="stat-value">{{ latest.body_fat_percentage }}%</span>
+        </div>
+        {% endif %}
+        {% if latest.chest_cm %}
+        <div class="stat">
+            <span class="stat-label">Pecho</span>
+            <span class="stat-value">{{ latest.chest_cm }} cm</span>
+        </div>
+        {% endif %}
+        {% if latest.waist_cm %}
+        <div class="stat">
+            <span class="stat-label">Cintura</span>
+            <span class="stat-value">{{ latest.waist_cm }} cm</span>
+        </div>
+        {% endif %}
+        {% if latest.hips_cm %}
+        <div class="stat">
+            <span class="stat-label">Cadera</span>
+            <span class="stat-value">{{ latest.hips_cm }} cm</span>
+        </div>
+        {% endif %}
+        {% if latest.bicep_right_cm %}
+        <div class="stat">
+            <span class="stat-label">Bíceps D</span>
+            <span class="stat-value">{{ latest.bicep_right_cm }} cm</span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<div class="card">
+    <h3>Historial</h3>
+    {% if measurements %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Peso</th>
+                <th>% Grasa</th>
+                <th>Cintura</th>
+                <th>Pecho</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in measurements %}
+            <tr>
+                <td>{{ m.measurement_date }}</td>
+                <td>{{ m.weight_kg or '-' }}</td>
+                <td>{{ m.body_fat_percentage or '-' }}</td>
+                <td>{{ m.waist_cm or '-' }}</td>
+                <td>{{ m.chest_cm or '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted">No hay medidas registradas todavía.</p>
+    {% endif %}
+</div>
+{% endblock %}

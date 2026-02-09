@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Añadir Alimento - GymGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Añadir Nuevo Alimento</h1>
+    <a href="{{ url_for('nutrition.foods') }}" class="btn">← Volver</a>
+</div>
+
+<div class="card" style="max-width: 600px;">
+    <form method="POST" action="{{ url_for('nutrition.new_food') }}">
+        <div class="form-group">
+            <label for="name">Nombre del alimento *</label>
+            <input type="text" id="name" name="name" required 
+                   placeholder="Ej: Pechuga de pollo, Arroz blanco...">
+        </div>
+        
+        <div class="form-group">
+            <label for="brand">Marca (opcional)</label>
+            <input type="text" id="brand" name="brand" 
+                   placeholder="Ej: Hacendado, Nestlé...">
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="serving_size">Porción</label>
+                <input type="number" id="serving_size" name="serving_size" 
+                       value="100" step="0.1" min="0">
+            </div>
+            <div class="form-group">
+                <label for="serving_unit">Unidad</label>
+                <select id="serving_unit" name="serving_unit">
+                    <option value="g" selected>gramos (g)</option>
+                    <option value="ml">mililitros (ml)</option>
+                    <option value="unidad">unidad</option>
+                </select>
+            </div>
+        </div>
+        
+        <h4 style="margin: 1.5rem 0 1rem;">Información nutricional</h4>
+        <p class="text-muted" style="font-size: 0.875rem;">Por la porción indicada arriba</p>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="calories">Calorías (kcal) *</label>
+                <input type="number" id="calories" name="calories" 
+                       required step="0.1" min="0" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label for="protein_g">Proteína (g)</label>
+                <input type="number" id="protein_g" name="protein_g" 
+                       step="0.1" min="0" placeholder="0">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="carbs_g">Carbohidratos (g)</label>
+                <input type="number" id="carbs_g" name="carbs_g" 
+                       step="0.1" min="0" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label for="fat_g">Grasas (g)</label>
+                <input type="number" id="fat_g" name="fat_g" 
+                       step="0.1" min="0" placeholder="0">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="fiber_g">Fibra (g)</label>
+            <input type="number" id="fiber_g" name="fiber_g" 
+                   step="0.1" min="0" placeholder="0">
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Guardar Alimento</button>
+            <a href="{{ url_for('nutrition.foods') }}" class="btn btn-outline">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    @media (max-width: 500px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

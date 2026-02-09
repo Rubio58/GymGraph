@@ -1,0 +1,13 @@
+# Configuración de dashboards para Grafana
+apiVersion: 1
+
+providers:
+  - name: 'GymGraph Dashboards'
+    orgId: 1
+    folder: 'GymGraph'
+    folderUid: 'gymgraph'
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards

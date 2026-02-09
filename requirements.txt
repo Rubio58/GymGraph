@@ -1,0 +1,15 @@
+# GymGraph - Dependencias del proyecto
+# Aplicación de escritorio local
+
+# Framework web
+Flask==3.0.0
+flask-cors==4.0.0
+
+# Utilidades
+Werkzeug==3.0.1
+
+# Testing
+pytest==7.4.3
+pytest-cov==4.1.0
+
+# Nota: SQLite viene incluido con Python, no requiere instalación

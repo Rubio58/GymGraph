@@ -1,0 +1,617 @@
+{% extends "base.html" %}
+
+{% block title %}Gráficas y Análisis - GymGraph{% endblock %}
+
+{% block extra_css %}
+<style>
+    .charts-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .date-range {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+        background: white;
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius-lg);
+        border: 2px solid var(--border-light);
+    }
+    
+    .date-range label {
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+    
+    .date-range input {
+        padding: 0.6rem 0.85rem;
+        border-radius: var(--radius);
+        border: 2px solid var(--border-color);
+        background: white;
+        color: var(--text-primary);
+        font-family: inherit;
+    }
+    
+    .date-range input:focus {
+        border-color: var(--terracotta);
+        outline: none;
+    }
+    
+    .quick-ranges {
+        display: flex;
+        gap: 0.4rem;
+    }
+    
+    .quick-ranges button {
+        padding: 0.4rem 0.85rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border-radius: var(--radius-pill);
+        border: 2px solid var(--border-color);
+        background: var(--cream-dark);
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: var(--transition);
+        font-family: inherit;
+    }
+    
+    .quick-ranges button:hover {
+        background: var(--beige);
+        border-color: var(--terracotta);
+    }
+    
+    .quick-ranges button.active {
+        background: var(--terracotta);
+        border-color: var(--terracotta);
+        color: white;
+    }
+    
+    .section-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: 1.75rem;
+        margin-bottom: 1.5rem;
+        border: 2px solid var(--border-light);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .section-card h3 {
+        margin-bottom: 0.75rem;
+        color: var(--terracotta);
+    }
+    
+    /* Correlación */
+    .correlation-selectors {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+        margin-top: 1.25rem;
+    }
+    
+    .correlation-selectors select {
+        padding: 0.65rem 1rem;
+        border-radius: var(--radius);
+        border: 2px solid var(--border-color);
+        background: white;
+        color: var(--text-primary);
+        min-width: 200px;
+        cursor: pointer;
+        font-family: inherit;
+        -webkit-appearance: menulist;
+        -moz-appearance: menulist;
+        appearance: menulist;
+    }
+    
+    .correlation-selectors select:focus {
+        border-color: var(--terracotta);
+        outline: none;
+    }
+    
+    .correlation-selectors select option {
+        background: white;
+        color: var(--text-primary);
+        padding: 0.5rem;
+    }
+    
+    .correlation-result-grid {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+    
+    .correlation-value {
+        text-align: center;
+        padding: 1.5rem;
+        background: var(--cream-dark);
+        border-radius: var(--radius-lg);
+        border: 2px solid var(--border-light);
+    }
+    
+    .correlation-number {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-family: 'Playfair Display', serif;
+    }
+    
+    .correlation-positive { color: var(--sage); }
+    .correlation-negative { color: var(--brick); }
+    .correlation-neutral { color: var(--text-muted); }
+    
+    .scatter-container {
+        height: 300px;
+    }
+    
+    /* Métricas */
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        gap: 0.6rem;
+    }
+    
+    .metric-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.65rem 0.85rem;
+        background: var(--cream-dark);
+        border-radius: var(--radius);
+        cursor: pointer;
+        border: 2px solid transparent;
+        font-size: 0.9rem;
+        transition: var(--transition);
+    }
+    
+    .metric-checkbox:hover {
+        border-color: var(--border-color);
+        background: var(--beige);
+    }
+    
+    .metric-checkbox.selected {
+        border-color: var(--terracotta);
+        background: rgba(198, 123, 92, 0.1);
+    }
+    
+    .metric-checkbox input { display: none; }
+    
+    .metric-color {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        border: 2px solid rgba(255,255,255,0.3);
+    }
+    
+    .chart-wrapper {
+        height: 350px;
+        position: relative;
+    }
+    
+    .no-data {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-muted);
+        background: var(--cream-dark);
+        border-radius: var(--radius-lg);
+        border: 2px dashed var(--border-color);
+    }
+    
+    .no-data span {
+        font-size: 3rem;
+        display: block;
+        margin-bottom: 1rem;
+        filter: grayscale(0.3);
+    }
+
+    @media (max-width: 768px) {
+        .correlation-result-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📊 Gráficas y Análisis</h1>
+    <p class="subtitle">Visualiza y correlaciona tus datos de fitness</p>
+</div>
+
+<!-- Controles de fecha -->
+<div class="charts-header">
+    <div class="date-range">
+        <label>Desde:</label>
+        <input type="date" id="startDate">
+        <label>Hasta:</label>
+        <input type="date" id="endDate">
+        <div class="quick-ranges">
+            <button onclick="setDateRange(7)">7d</button>
+            <button onclick="setDateRange(30)" class="active">30d</button>
+            <button onclick="setDateRange(90)">3m</button>
+            <button onclick="setDateRange(180)">6m</button>
+            <button onclick="setDateRange(365)">1a</button>
+        </div>
+    </div>
+</div>
+
+<!-- SECCIÓN 1: Análisis de Correlación -->
+<div class="section-card">
+    <h3>🔗 Análisis de Correlación</h3>
+    <p class="text-muted">Descubre cómo se relacionan dos métricas entre sí</p>
+    
+    <div class="correlation-selectors">
+        <select id="correlationMetric1" style="-webkit-appearance: menulist; appearance: menulist;">
+            <option value="">-- Selecciona métrica 1 --</option>
+        </select>
+        <span>↔️</span>
+        <select id="correlationMetric2" style="-webkit-appearance: menulist; appearance: menulist;">
+            <option value="">-- Selecciona métrica 2 --</option>
+        </select>
+        <button class="btn btn-primary" onclick="calculateCorrelation()">Calcular</button>
+    </div>
+    
+    <div id="correlationResult" style="display: none;">
+        <div class="correlation-result-grid">
+            <div class="correlation-value">
+                <div id="correlationNumber" class="correlation-number">--</div>
+                <div>Coeficiente r</div>
+                <small class="text-muted" id="correlationPoints">-- puntos</small>
+            </div>
+            <div class="scatter-container">
+                <canvas id="scatterChart"></canvas>
+            </div>
+        </div>
+        <div id="correlationInterpretation" style="margin-top: 1rem; padding: 1rem; background: var(--cream-dark); border-radius: var(--radius); border: 2px solid var(--border-light);">
+        </div>
+    </div>
+</div>
+
+<!-- SECCIÓN 2: Gráfica de Evolución -->
+<div class="section-card">
+    <h3>📈 Evolución en el Tiempo</h3>
+    <p class="text-muted">Selecciona métricas para ver su progreso</p>
+    
+    <div id="metricsContainer" style="margin-bottom: 1rem;">
+        <!-- Se llena dinámicamente -->
+    </div>
+    
+    <div class="chart-wrapper">
+        <canvas id="timeSeriesChart"></canvas>
+    </div>
+    <div id="noDataMessage" class="no-data" style="display: none;">
+        <span>📉</span>
+        <p>Selecciona métricas arriba para ver su evolución</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+<script>
+    let allMetrics = [];
+    let selectedMetrics = new Set();
+    let timeSeriesChart = null;
+    let scatterChart = null;
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+        console.log('Inicializando gráficas...');
+        try {
+            // Primero cargar métricas
+            await loadMetrics();
+            // Luego configurar fechas (sin llamar a updateCharts todavía)
+            initDateRange(30);
+            // Añadir listeners
+            document.getElementById('startDate').addEventListener('change', updateCharts);
+            document.getElementById('endDate').addEventListener('change', updateCharts);
+            console.log('Gráficas inicializadas correctamente');
+        } catch (error) {
+            console.error('Error inicializando:', error);
+        }
+    });
+    
+    function initDateRange(days) {
+        const end = new Date();
+        const start = new Date();
+        start.setDate(start.getDate() - days);
+        
+        document.getElementById('startDate').value = start.toISOString().split('T')[0];
+        document.getElementById('endDate').value = end.toISOString().split('T')[0];
+        
+        // Marcar botón activo
+        document.querySelectorAll('.quick-ranges button').forEach(btn => {
+            if (btn.textContent.includes('30d')) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+    }
+    
+    function setDateRange(days) {
+        const end = new Date();
+        const start = new Date();
+        start.setDate(start.getDate() - days);
+        
+        document.getElementById('startDate').value = start.toISOString().split('T')[0];
+        document.getElementById('endDate').value = end.toISOString().split('T')[0];
+        
+        document.querySelectorAll('.quick-ranges button').forEach(btn => btn.classList.remove('active'));
+        if (event && event.target) event.target.classList.add('active');
+        
+        updateCharts();
+    }
+    
+    async function loadMetrics() {
+        try {
+            const response = await fetch('/charts/api/metrics');
+            if (!response.ok) throw new Error('Error HTTP: ' + response.status);
+            allMetrics = await response.json();
+            console.log('Métricas cargadas:', allMetrics.length);
+            renderMetricsPanel();
+            populateCorrelationSelects();
+        } catch (error) {
+            console.error('Error cargando métricas:', error);
+            document.getElementById('metricsContainer').innerHTML = 
+                '<p class="text-muted">Error cargando métricas. Recarga la página.</p>';
+        }
+    }
+    
+    function renderMetricsPanel() {
+        const container = document.getElementById('metricsContainer');
+        if (!allMetrics || allMetrics.length === 0) {
+            container.innerHTML = '<p class="text-muted">Error cargando métricas</p>';
+            return;
+        }
+        container.innerHTML = `<div class="metrics-grid">
+            ${allMetrics.map(m => `
+                <div class="metric-checkbox" data-metric="${m.id}" onclick="toggleMetric('${m.id}')">
+                    <span class="metric-color" style="background: ${m.color}"></span>
+                    <span>${m.name}</span>
+                </div>
+            `).join('')}
+        </div>`;
+    }
+    
+    function populateCorrelationSelects() {
+        const select1 = document.getElementById('correlationMetric1');
+        const select2 = document.getElementById('correlationMetric2');
+        
+        if (!select1 || !select2) {
+            console.error('No se encontraron los selectores de correlación');
+            return;
+        }
+        
+        // Limpiar y añadir opciones
+        select1.innerHTML = '<option value="">-- Selecciona métrica 1 --</option>';
+        select2.innerHTML = '<option value="">-- Selecciona métrica 2 --</option>';
+        
+        allMetrics.forEach(m => {
+            const opt1 = document.createElement('option');
+            opt1.value = m.id;
+            opt1.textContent = `${m.name} (${m.unit})`;
+            select1.appendChild(opt1);
+            
+            const opt2 = document.createElement('option');
+            opt2.value = m.id;
+            opt2.textContent = `${m.name} (${m.unit})`;
+            select2.appendChild(opt2);
+        });
+        
+        console.log('Selectores poblados con', allMetrics.length, 'métricas');
+    }
+    
+    function toggleMetric(metricId) {
+        const metricBox = document.querySelector(`[data-metric="${metricId}"]`);
+        if (!metricBox) return;
+        
+        if (selectedMetrics.has(metricId)) {
+            selectedMetrics.delete(metricId);
+            metricBox.classList.remove('selected');
+        } else {
+            selectedMetrics.add(metricId);
+            metricBox.classList.add('selected');
+        }
+        updateCharts();
+    }
+    
+    async function updateCharts() {
+        if (selectedMetrics.size === 0) {
+            document.getElementById('noDataMessage').style.display = 'block';
+            document.getElementById('timeSeriesChart').style.display = 'none';
+            if (timeSeriesChart) { timeSeriesChart.destroy(); timeSeriesChart = null; }
+            return;
+        }
+        
+        document.getElementById('noDataMessage').style.display = 'none';
+        document.getElementById('timeSeriesChart').style.display = 'block';
+        
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const metricsParam = Array.from(selectedMetrics).join(',');
+        
+        try {
+            const response = await fetch(`/charts/api/data?metrics=${metricsParam}&start_date=${startDate}&end_date=${endDate}`);
+            const data = await response.json();
+            renderTimeSeriesChart(data);
+        } catch (error) {
+            console.error('Error cargando datos:', error);
+        }
+    }
+    
+    function renderTimeSeriesChart(data) {
+        const ctx = document.getElementById('timeSeriesChart').getContext('2d');
+        if (timeSeriesChart) timeSeriesChart.destroy();
+        
+        const datasets = [];
+        const metricKeys = Object.keys(data);
+        
+        for (let i = 0; i < metricKeys.length; i++) {
+            const metricId = metricKeys[i];
+            const values = data[metricId];
+            const metric = allMetrics.find(m => m.id === metricId);
+            if (!metric || values.length === 0) continue;
+            
+            datasets.push({
+                label: `${metric.name} (${metric.unit})`,
+                data: values.map(v => ({ x: v.date, y: v.value })),
+                borderColor: metric.color,
+                backgroundColor: metric.color + '25',
+                tension: 0.4,
+                fill: false,
+                pointBackgroundColor: metric.color,
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 3,
+                yAxisID: i % 2 === 0 ? 'y-left' : 'y-right'
+            });
+        }
+        
+        timeSeriesChart = new Chart(ctx, {
+            type: 'line',
+            data: { datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { 
+                        position: 'top', 
+                        labels: { 
+                            color: '#3D3836',
+                            font: { family: 'Nunito', weight: '600' }
+                        } 
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: { unit: 'day', displayFormats: { day: 'dd/MM' } },
+                        ticks: { color: '#6B6560' },
+                        grid: { color: 'rgba(212, 197, 181, 0.3)' }
+                    },
+                    'y-left': {
+                        type: 'linear',
+                        position: 'left',
+                        ticks: { color: '#6B6560' },
+                        grid: { color: 'rgba(212, 197, 181, 0.2)' }
+                    },
+                    'y-right': {
+                        type: 'linear',
+                        position: 'right',
+                        display: metricKeys.length > 1,
+                        ticks: { color: '#6B6560' },
+                        grid: { drawOnChartArea: false }
+                    }
+                }
+            }
+        });
+    }
+    
+    async function calculateCorrelation() {
+        const metric1 = document.getElementById('correlationMetric1').value;
+        const metric2 = document.getElementById('correlationMetric2').value;
+        
+        if (!metric1 || !metric2) {
+            alert('Selecciona dos métricas');
+            return;
+        }
+        if (metric1 === metric2) {
+            alert('Selecciona métricas diferentes');
+            return;
+        }
+        
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        
+        try {
+            const response = await fetch(
+                `/charts/api/correlation?metric1=${metric1}&metric2=${metric2}&start_date=${startDate}&end_date=${endDate}`
+            );
+            const data = await response.json();
+            displayCorrelationResult(data, metric1, metric2);
+        } catch (error) {
+            console.error('Error calculando correlación:', error);
+        }
+    }
+    
+    function displayCorrelationResult(data, metric1Id, metric2Id) {
+        const resultDiv = document.getElementById('correlationResult');
+        resultDiv.style.display = 'block';
+        
+        const metric1 = allMetrics.find(m => m.id === metric1Id);
+        const metric2 = allMetrics.find(m => m.id === metric2Id);
+        
+        const correlationNum = document.getElementById('correlationNumber');
+        const correlationPoints = document.getElementById('correlationPoints');
+        
+        if (data.correlation !== null && data.correlation !== undefined) {
+            correlationNum.textContent = data.correlation.toFixed(3);
+            correlationNum.className = 'correlation-number ' + 
+                (data.correlation > 0.3 ? 'correlation-positive' : 
+                 data.correlation < -0.3 ? 'correlation-negative' : 'correlation-neutral');
+        } else {
+            correlationNum.textContent = '--';
+            correlationNum.className = 'correlation-number correlation-neutral';
+        }
+        
+        correlationPoints.textContent = `${data.common_points || 0} puntos`;
+        
+        const interpretation = document.getElementById('correlationInterpretation');
+        if (data.interpretation) {
+            interpretation.innerHTML = `
+                <strong>Fuerza:</strong> ${data.interpretation.strength} | 
+                <strong>Dirección:</strong> ${data.interpretation.direction || 'N/A'}<br>
+                <small class="text-muted">${data.interpretation.explanation}</small>
+            `;
+        } else {
+            interpretation.innerHTML = `<p>${data.message || 'No hay suficientes datos'}</p>`;
+        }
+        
+        if (data.scatter_data && data.scatter_data.length > 0) {
+            renderScatterChart(data.scatter_data, metric1, metric2);
+        }
+    }
+    
+    function renderScatterChart(scatterData, metric1, metric2) {
+        const ctx = document.getElementById('scatterChart').getContext('2d');
+        if (scatterChart) scatterChart.destroy();
+        
+        scatterChart = new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    data: scatterData.map(d => ({ x: d.x, y: d.y })),
+                    backgroundColor: '#C67B5C',
+                    borderColor: '#A85D42',
+                    pointRadius: 7,
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: {
+                        title: { display: true, text: metric1?.name || '', color: '#3D3836', font: { weight: '600' } },
+                        ticks: { color: '#6B6560' },
+                        grid: { color: 'rgba(212, 197, 181, 0.3)' }
+                    },
+                    y: {
+                        title: { display: true, text: metric2?.name || '', color: '#3D3836', font: { weight: '600' } },
+                        ticks: { color: '#6B6560' },
+                        grid: { color: 'rgba(212, 197, 181, 0.3)' }
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

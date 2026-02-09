@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Ciclo Menstrual - GymGraph{% endblock %}
+
+{% block extra_css %}
+<style>
+    .radio-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin: 0.5rem 0;
+    }
+    
+    .radio-option {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.5rem 1rem;
+        background: var(--cream-dark);
+        border: 2px solid var(--border-light);
+        border-radius: var(--radius-pill);
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    .radio-option:hover {
+        border-color: var(--terracotta);
+        background: var(--beige);
+    }
+    
+    .radio-option:has(input:checked) {
+        background: var(--terracotta);
+        border-color: var(--terracotta);
+        color: white;
+    }
+    
+    .badge-none { background: var(--beige); color: var(--text-secondary); }
+    .badge-light { background: #F8E3E0; color: #A85D42; }
+    .badge-medium { background: #E8B5A8; color: #8B4513; }
+    .badge-heavy { background: var(--terracotta); color: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>🩸 Ciclo Menstrual</h1>
+        <p class="subtitle">Historial completo de tu ciclo</p>
+    </div>
+    <a href="{{ url_for('selfcare.index') }}" class="btn">← Volver</a>
+</div>
+
+<!-- Formulario para nuevo registro -->
+<div class="card" style="max-width: 600px; margin-bottom: 2rem;">
+    <h3>Añadir registro</h3>
+    <form action="{{ url_for('selfcare.menstrual') }}" method="POST">
+        <div class="form-group">
+            <label>Fecha</label>
+            <input type="date" name="log_date" value="{{ today or '' }}" required style="max-width: 200px;">
+        </div>
+        <div class="form-group">
+            <label>Intensidad del flujo</label>
+            <div class="radio-options">
+                <label class="radio-option">
+                    <input type="radio" name="flow_option" value="none" checked>
+                    <span>Sin período</span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="flow_option" value="light">
+                    <span>Ligero</span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="flow_option" value="medium">
+                    <span>Medio</span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="flow_option" value="heavy">
+                    <span>Intenso</span>
+                </label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Síntomas (opcional)</label>
+            <textarea name="symptoms" rows="2" placeholder="Dolor, cansancio, cambios de humor..."></textarea>
+        </div>
+        <div class="form-group">
+            <label>Notas (opcional)</label>
+            <textarea name="notes" rows="2" placeholder="Cualquier observación adicional"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar registro</button>
+    </form>
+</div>
+
+<!-- Historial -->
+<div class="card">
+    <h3>📋 Historial del ciclo</h3>
+    {% if logs %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Intensidad</th>
+                <th>Síntomas</th>
+                <th>Notas</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.log_date }}</td>
+                <td>
+                    <span class="badge badge-{{ log.flow_intensity or 'none' }}">
+                        {% if log.flow_intensity == 'light' %}Ligero
+                        {% elif log.flow_intensity == 'medium' %}Medio
+                        {% elif log.flow_intensity == 'heavy' %}Intenso
+                        {% else %}Sin período
+                        {% endif %}
+                    </span>
+                </td>
+                <td class="text-muted">{{ log.symptoms or '-' }}</td>
+                <td class="text-muted">{{ log.notes or '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p>No hay registros del ciclo todavía</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

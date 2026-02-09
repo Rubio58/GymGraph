@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Autocuidado - GymGraph{% endblock %}
+
+{% block extra_css %}
+<style>
+    .radio-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin: 0.5rem 0;
+    }
+    
+    .radio-option {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.5rem 1rem;
+        background: var(--cream-dark);
+        border: 2px solid var(--border-light);
+        border-radius: var(--radius-pill);
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    .radio-option:hover {
+        border-color: var(--terracotta);
+        background: var(--beige);
+    }
+    
+    .radio-option:has(input:checked) {
+        background: var(--terracotta);
+        border-color: var(--terracotta);
+        color: white;
+    }
+    
+    .radio-option input[type="radio"] {
+        accent-color: var(--terracotta);
+    }
+    
+    .badge-none { background: var(--beige); color: var(--text-secondary); }
+    .badge-light { background: #F8E3E0; color: #A85D42; }
+    .badge-medium { background: #E8B5A8; color: #8B4513; }
+    .badge-heavy { background: var(--terracotta); color: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Autocuidado</h1>
+    <p class="subtitle">Sueño, pasos y bienestar personal</p>
+</div>
+
+<div class="selfcare-grid">
+    <!-- Sueño -->
+    <div class="card">
+        <h3>😴 Sueño</h3>
+        <div class="quick-log">
+            <form action="{{ url_for('selfcare.sleep') }}" method="POST" class="inline-form">
+                <input type="hidden" name="log_date" value="{{ today }}">
+                <input type="number" name="hours_slept" placeholder="Horas" step="0.5" required style="width: 80px;">
+                <select name="sleep_quality">
+                    <option value="5">Calidad</option>
+                    {% for i in range(1, 11) %}
+                    <option value="{{ i }}">{{ i }}/10</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-sm btn-primary">Guardar</button>
+            </form>
+        </div>
+        <div class="recent-logs">
+            <h5>Últimos 7 días</h5>
+            {% for log in sleep_logs[:7] %}
+            <div class="log-item">
+                <span>{{ log.log_date }}</span>
+                <span>{{ log.hours_slept }}h</span>
+                <span class="badge">{{ log.sleep_quality }}/10</span>
+            </div>
+            {% else %}
+            <p class="text-muted">Sin registros</p>
+            {% endfor %}
+        </div>
+        <a href="{{ url_for('selfcare.sleep') }}" class="link">Ver más →</a>
+    </div>
+
+    <!-- Pasos -->
+    <div class="card">
+        <h3>👟 Pasos</h3>
+        <div class="quick-log">
+            <form action="{{ url_for('selfcare.steps') }}" method="POST" class="inline-form">
+                <input type="hidden" name="log_date" value="{{ today }}">
+                <input type="number" name="steps" placeholder="Pasos de hoy" required style="width: 120px;">
+                <button type="submit" class="btn btn-sm btn-primary">Guardar</button>
+            </form>
+        </div>
+        <div class="recent-logs">
+            <h5>Últimos 7 días</h5>
+            {% for log in step_logs[:7] %}
+            <div class="log-item">
+                <span>{{ log.log_date }}</span>
+                <span class="stat-value">{{ "{:,}".format(log.steps) }}</span>
+            </div>
+            {% else %}
+            <p class="text-muted">Sin registros</p>
+            {% endfor %}
+        </div>
+        <a href="{{ url_for('selfcare.steps') }}" class="link">Ver más →</a>
+    </div>
+
+    <!-- Ciclo menstrual -->
+    <div class="card">
+        <h3>🩸 Ciclo Menstrual</h3>
+        <div class="quick-log">
+            <form action="{{ url_for('selfcare.menstrual') }}" method="POST" class="inline-form">
+                <input type="hidden" name="log_date" value="{{ today }}">
+                <div class="radio-options">
+                    <label class="radio-option">
+                        <input type="radio" name="flow_option" value="none" checked>
+                        <span>Sin período</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="flow_option" value="light">
+                        <span>Ligero</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="flow_option" value="medium">
+                        <span>Medio</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="flow_option" value="heavy">
+                        <span>Intenso</span>
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary">Guardar</button>
+            </form>
+        </div>
+        <div class="recent-logs">
+            <h5>Último mes</h5>
+            {% for log in menstrual_logs[:10] %}
+            <div class="log-item">
+                <span>{{ log.log_date }}</span>
+                <span class="badge badge-{{ log.flow_intensity or 'none' }}">
+                    {% if log.flow_intensity == 'light' %}Ligero
+                    {% elif log.flow_intensity == 'medium' %}Medio
+                    {% elif log.flow_intensity == 'heavy' %}Intenso
+                    {% else %}Sin período
+                    {% endif %}
+                </span>
+            </div>
+            {% else %}
+            <p class="text-muted">Sin registros</p>
+            {% endfor %}
+        </div>
+        <a href="{{ url_for('selfcare.menstrual') }}" class="link">Ver más →</a>
+    </div>
+</div>
+{% endblock %}

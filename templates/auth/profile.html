@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Mi Perfil - GymGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Mi Perfil</h1>
+</div>
+
+<div class="card">
+    <h3>Información personal</h3>
+    
+    <form method="POST" class="form">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="username">Usuario</label>
+                <input type="text" id="username" value="{{ user.username }}" disabled>
+                <small>El nombre de usuario no se puede cambiar</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" value="{{ user.email }}" disabled>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="first_name">Nombre</label>
+                <input type="text" id="first_name" name="first_name" 
+                       value="{{ user.first_name or '' }}" placeholder="Tu nombre">
+            </div>
+            
+            <div class="form-group">
+                <label for="last_name">Apellidos</label>
+                <input type="text" id="last_name" name="last_name" 
+                       value="{{ user.last_name or '' }}" placeholder="Tus apellidos">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="birth_date">Fecha de nacimiento</label>
+                <input type="date" id="birth_date" name="birth_date" 
+                       value="{{ user.birth_date or '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="gender">Género</label>
+                <select id="gender" name="gender">
+                    <option value="">Selecciona...</option>
+                    <option value="male" {% if user.gender == 'male' %}selected{% endif %}>Masculino</option>
+                    <option value="female" {% if user.gender == 'female' %}selected{% endif %}>Femenino</option>
+                    <option value="other" {% if user.gender == 'other' %}selected{% endif %}>Otro</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="height_cm">Altura (cm)</label>
+                <input type="number" id="height_cm" name="height_cm" 
+                       value="{{ user.height_cm or '' }}" step="0.1" 
+                       placeholder="170" min="100" max="250">
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

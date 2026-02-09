@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GymGraph{% endblock %}</title>
+    
+    <!-- Fuentes Google - Estética retro-moderna editorial -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navegación -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="{{ url_for('main.index') }}">
+                <span class="logo">💪</span> GymGraph
+            </a>
+        </div>
+        
+        <ul class="nav-links">
+            <li><a href="{{ url_for('main.dashboard') }}" class="{% if request.endpoint == 'main.dashboard' or request.endpoint == 'main.index' %}active{% endif %}">Dashboard</a></li>
+            <li><a href="{{ url_for('workout.plans') }}" class="{% if 'workout' in request.endpoint %}active{% endif %}">Entrenamiento</a></li>
+            <li><a href="{{ url_for('nutrition.index') }}" class="{% if 'nutrition' in request.endpoint %}active{% endif %}">Nutrición</a></li>
+            <li><a href="{{ url_for('measurement.index') }}" class="{% if 'measurement' in request.endpoint %}active{% endif %}">Medidas</a></li>
+            <li><a href="{{ url_for('selfcare.index') }}" class="{% if 'selfcare' in request.endpoint %}active{% endif %}">Autocuidado</a></li>
+            <li><a href="{{ url_for('charts.index') }}" class="{% if 'charts' in request.endpoint %}active{% endif %}">📊 Gráficas</a></li>
+        </ul>
+    </nav>
+
+    <!-- Mensajes Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+            {{ message }}
+            <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Contenido principal -->
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 GymGraph - Huilin Jin, Arkaitz Cambra, Andrés Salamanca</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

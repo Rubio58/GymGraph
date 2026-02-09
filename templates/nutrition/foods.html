@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Alimentos - GymGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Catálogo de Alimentos</h1>
+    <a href="{{ url_for('nutrition.new_food') }}" class="btn btn-primary">+ Añadir Alimento</a>
+</div>
+
+<div class="search-box" style="margin-bottom: 1.5rem;">
+    <input type="text" id="searchFood" placeholder="Buscar alimento..." 
+           onkeyup="filterFoods(this.value)" style="width: 100%; max-width: 400px;">
+</div>
+
+<div class="foods-grid" id="foodsGrid">
+    {% if foods %}
+        {% for food in foods %}
+        <div class="card food-card" data-name="{{ food.name|lower }}">
+            <div class="food-header">
+                <h4>{{ food.name }}</h4>
+                {% if food.brand %}
+                <span class="badge">{{ food.brand }}</span>
+                {% endif %}
+            </div>
+            <div class="food-info">
+                <p class="serving">Por {{ food.serving_size }}{{ food.serving_unit }}</p>
+                <div class="macros">
+                    <span class="macro calories">{{ food.calories|int }} kcal</span>
+                    <span class="macro protein">P: {{ food.protein_g|int }}g</span>
+                    <span class="macro carbs">C: {{ food.carbs_g|int }}g</span>
+                    <span class="macro fat">G: {{ food.fat_g|int }}g</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <p>No hay alimentos registrados todavía.</p>
+            <a href="{{ url_for('nutrition.new_food') }}" class="btn btn-primary">Añadir mi primer alimento</a>
+        </div>
+    {% endif %}
+</div>
+
+<div class="actions" style="margin-top: 2rem;">
+    <a href="{{ url_for('nutrition.index') }}" class="btn">← Volver a Nutrición</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterFoods(query) {
+    const cards = document.querySelectorAll('.food-card');
+    const lowerQuery = query.toLowerCase();
+    
+    cards.forEach(card => {
+        const name = card.dataset.name;
+        if (name.includes(lowerQuery)) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}

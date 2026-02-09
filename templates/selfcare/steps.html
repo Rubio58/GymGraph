@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Registro de Pasos - GymGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>👟 Registro de Pasos</h1>
+        <p class="subtitle">Historial completo de tu actividad diaria</p>
+    </div>
+    <a href="{{ url_for('selfcare.index') }}" class="btn">← Volver</a>
+</div>
+
+<!-- Formulario para nuevo registro -->
+<div class="card" style="max-width: 500px; margin-bottom: 2rem;">
+    <h3>Añadir registro</h3>
+    <form action="{{ url_for('selfcare.steps') }}" method="POST">
+        <div class="form-row">
+            <div class="form-group">
+                <label>Fecha</label>
+                <input type="date" name="log_date" value="{{ today or '' }}" required>
+            </div>
+            <div class="form-group">
+                <label>Pasos</label>
+                <input type="number" name="steps" min="0" placeholder="10000" required>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar registro</button>
+    </form>
+</div>
+
+<!-- Historial -->
+<div class="card">
+    <h3>📋 Historial de pasos</h3>
+    {% if logs %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Pasos</th>
+                <th>Distancia estimada</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.log_date }}</td>
+                <td><strong>{{ "{:,}".format(log.steps) }}</strong></td>
+                <td class="text-muted">~{{ "%.1f"|format(log.steps * 0.0008) }} km</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p>No hay registros de pasos todavía</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

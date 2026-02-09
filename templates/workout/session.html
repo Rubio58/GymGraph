@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Entrenamiento - GymGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Sesión de Entrenamiento</h1>
+    <p class="subtitle">Registra tus series y repeticiones</p>
+</div>
+
+<div class="workout-container">
+    <div class="card">
+        <div class="workout-header">
+            <h3 id="session-title">Nueva sesión</h3>
+            <div class="session-timer">
+                <span id="timer">00:00:00</span>
+            </div>
+        </div>
+
+        <!-- Selección de ejercicio -->
+        <div class="exercise-selector">
+            <label for="exercise-select">Añadir ejercicio:</label>
+            <select id="exercise-select">
+                <option value="">Selecciona un ejercicio...</option>
+                {% for exercise in exercises %}
+                <option value="{{ exercise.id }}" data-muscle="{{ exercise.muscle_group }}">
+                    {{ exercise.name }} ({{ exercise.muscle_group }})
+                </option>
+                {% endfor %}
+            </select>
+            <button class="btn btn-primary" onclick="addExercise()">Añadir</button>
+        </div>
+
+        <!-- Lista de ejercicios de la sesión -->
+        <div class="workout-exercises" id="workout-exercises">
+            <p class="text-muted text-center">
+                Selecciona ejercicios para comenzar tu entrenamiento
+            </p>
+        </div>
+
+        <!-- Acciones -->
+        <div class="workout-actions">
+            <button class="btn btn-success btn-lg" onclick="finishWorkout()">
+                ✓ Finalizar entrenamiento
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let sessionId = null;
+let timerInterval = null;
+let startTime = null;
+const exercises = {};
+
+document.addEventListener('DOMContentLoaded', function() {
+    startSession();
+});
+
+async function startSession() {
+    try {
+        const response = await fetch('/workout/api/sessions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+        });
+        const data = await response.json();
+        sessionId = data.id;
+        startTimer();
+    } catch (error) {
+        console.error('Error iniciando sesión:', error);
+    }
+}
+
+function startTimer() {
+    startTime = new Date();
+    timerInterval = setInterval(updateTimer, 1000);
+}
+
+function updateTimer() {
+    const now = new Date();
+    const diff = now - startTime;
+    const hours = Math.floor(diff / 3600000);
+    const minutes = Math.floor((diff % 3600000) / 60000);
+    const seconds = Math.floor((diff % 60000) / 1000);
+    
+    document.getElementById('timer').textContent = 
+        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function addExercise() {
+    const select = document.getElementById('exercise-select');
+    const exerciseId = select.value;
+    const exerciseName = select.options[select.selectedIndex].text;
+    
+    if (!exerciseId) return;
+    
+    if (!exercises[exerciseId]) {
+        exercises[exerciseId] = {
+            name: exerciseName,
+            sets: []
+        };
+        renderExercises();
+    }
+    
+    select.value = '';
+}
+
+function renderExercises() {
+    const container = document.getElementById('workout-exercises');
+    
+    if (Object.keys(exercises).length === 0) {
+        container.innerHTML = '<p class="text-muted text-center">Selecciona ejercicios para comenzar tu entrenamiento</p>';
+        return;
+    }
+    
+    let html = '';
+    for (const [id, exercise] of Object.entries(exercises)) {
+        html += `
+            <div class="exercise-card" data-exercise-id="${id}">
+                <div class="exercise-header">
+                    <h4>${exercise.name}</h4>
+                    <button class="btn btn-sm" onclick="addSet('${id}')">+ Serie</button>
+                </div>
+                <div class="sets-table">
+                    <div class="sets-header">
+                        <span>Serie</span>
+                        <span>Peso (kg)</span>
+                        <span>Reps</span>
+                        <span>RPE</span>
+                        <span></span>
+                    </div>
+                    <div class="sets-body" id="sets-${id}">
+                        ${exercise.sets.map((set, index) => `
+                            <div class="set-row">
+                                <span>${index + 1}</span>
+                                <input type="number" value="${set.weight}" step="0.5" 
+                                       onchange="updateSet('${id}', ${index}, 'weight', this.value)">
+                                <input type="number" value="${set.reps}" 
+                                       onchange="updateSet('${id}', ${index}, 'reps', this.value)">
+                                <input type="number" value="${set.rpe}" min="1" max="10"
+                                       onchange="updateSet('${id}', ${index}, 'rpe', this.value)">
+                                <button class="btn btn-sm btn-danger" onclick="removeSet('${id}', ${index})">×</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = html;
+}
+
+function addSet(exerciseId) {
+    const lastSet = exercises[exerciseId].sets[exercises[exerciseId].sets.length - 1];
+    exercises[exerciseId].sets.push({
+        weight: lastSet ? lastSet.weight : 0,
+        reps: lastSet ? lastSet.reps : 0,
+        rpe: 7
+    });
+    renderExercises();
+}
+
+function updateSet(exerciseId, setIndex, field, value) {
+    exercises[exerciseId].sets[setIndex][field] = parseFloat(value) || 0;
+}
+
+function removeSet(exerciseId, setIndex) {
+    exercises[exerciseId].sets.splice(setIndex, 1);
+    if (exercises[exerciseId].sets.length === 0) {
+        delete exercises[exerciseId];
+    }
+    renderExercises();
+}
+
+async function finishWorkout() {
+    if (!sessionId) return;
+    
+    // Guardar todas las series
+    for (const [exerciseId, exercise] of Object.entries(exercises)) {
+        for (let i = 0; i < exercise.sets.length; i++) {
+            const set = exercise.sets[i];
+            await fetch(`/workout/api/sessions/${sessionId}/sets`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    exercise_id: parseInt(exerciseId),
+                    set_number: i + 1,
+                    weight_kg: set.weight,
+                    reps: set.reps,
+                    rpe: set.rpe
+                })
+            });
+        }
+    }
+    
+    // Finalizar sesión
+    await fetch(`/workout/api/sessions/${sessionId}/end`, { method: 'POST' });
+    
+    clearInterval(timerInterval);
+    alert('¡Entrenamiento guardado!');
+    window.location.href = '/workout/history';
+}
+</script>
+{% endblock %}
