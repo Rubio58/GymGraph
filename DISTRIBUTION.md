@@ -33,8 +33,14 @@ chmod +x GymGraph
 
 ### Compilar para tu SO actual
 ```bash
+python build_exe.py --current
+```
+
+### Compilar para todos los SO (por defecto)
+```bash
 python build_exe.py
 ```
+✅ Genera ejecutables para Windows, Linux y macOS automáticamente.
 
 ### Compilar para un SO específico
 ```bash
@@ -47,12 +53,6 @@ python build_exe.py --linux
 # Solo macOS
 python build_exe.py --mac
 ```
-
-### Compilar para todos los SO
-```bash
-python build_exe.py --all
-```
-⚠️ Nota: Necesitas tener compiladores/herramientas específicas para cada SO.
 
 ### Tamaños típicos
 - **Windows .exe**: 60-80 MB

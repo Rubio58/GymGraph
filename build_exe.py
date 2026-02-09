@@ -109,9 +109,12 @@ def main():
     """Función principal"""
     if len(sys.argv) > 1:
         arg = sys.argv[1].lower()
-        if arg == "--all":
-            print("🚀 Compilando para TODOS los SO (requiere compiladores específicos)...\n")
-            for plat in ["windows", "linux", "mac"]:
+        if arg == "--current":
+            # Compilar solo para el SO actual
+            build_exe(get_platform())
+        elif arg == "--all":
+            print("🚀 Compilando para TODOS los SO...\n")
+            for plat in ["linux", "windows", "mac"]:
                 print(f"\n{'='*60}")
                 print(f"Compilando para {plat.upper()}")
                 print(f"{'='*60}")
@@ -127,12 +130,20 @@ def main():
             }
             build_exe(platform_map[arg])
         else:
-            print("Uso: python build_exe.py [--windows|--linux|--mac|--all]")
-            print(f"\nPor defecto usa: --{get_platform()}")
+            print("Uso: python build_exe.py [--all|--current|--windows|--linux|--mac]")
+            print(f"\nPor defecto: python build_exe.py (compila para todos los SO)")
             sys.exit(1)
     else:
-        # Compilar para el SO actual
-        build_exe()
+        # Sin argumentos: compilar para TODOS los SO
+        print("🚀 Compilando para TODOS los SO...\n")
+        for plat in ["linux", "windows", "mac"]:
+            print(f"\n{'='*60}")
+            print(f"Compilando para {plat.upper()}")
+            print(f"{'='*60}")
+            try:
+                build_exe(plat)
+            except Exception as e:
+                print(f"⚠️  Error compilando para {plat}: {e}")
 
 
 if __name__ == "__main__":
