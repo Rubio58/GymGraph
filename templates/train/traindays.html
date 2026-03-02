@@ -1,0 +1,102 @@
+<!-- templates/train/traindays.html -->
+
+<div>
+    <!-- Traindays en línea horizontal -->
+    <div style="float: left;">
+        {% if traindays and traindays|length > 0 %}
+            {% for td in traindays %}
+            <div style="width: 220px; padding: 15px; background-color: #f0f0f0; border-radius: 5px; text-align: center; float: left; margin-right: 10px; margin-bottom: 10px;">
+                <p style="margin: 0; font-weight: bold;">{{ td.name }}</p>
+                
+                <!-- Mostrar ejercicios existentes -->
+                {% if traindayexercises and traindayexercises|length > 0 %}
+                    <div style="margin-top: 10px; text-align: left; font-size: 0.9em; border-top: 1px solid #ccc; padding-top: 10px;">
+                        {% for tde in traindayexercises %}
+                            {% if tde.idTrainday == td.idTrainday %}
+                                <div style="background-color: #e0e0e0; margin: 5px 0; padding: 8px; border-radius: 3px;">
+                                    <div>
+                                        <strong>{{ tde.exercise_name }}</strong> - {{ tde.numSets }} series
+                                        {% if tde.musclegroup %}
+                                            <small>({{ tde.musclegroup }})</small>
+                                        {% endif %}
+                                    </div>
+                                    {% if tde.notes %}
+                                        <small style="color: #666;">{{ tde.notes }}</small>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <!-- Botón Add exercise -->
+                <div style="margin-top: 10px;">
+                    <button onclick="document.getElementById('form-new-trainday-exercise-{{td.idTrainday}}').style.display='block'">
+                        Add exercise
+                    </button>
+
+                    <!-- Formulario Add exercise (oculto inicialmente) -->
+                    <div id="form-new-trainday-exercise-{{td.idTrainday}}" style="display: none; margin-top: 10px; text-align: left;">
+                        <form method="POST" 
+                              action="{{ url_for('train.create_traindayexercise') }}"
+                              hx-post="{{ url_for('train.create_traindayexercise') }}"
+                              hx-target="#traindays-container"
+                              hx-swap="innerHTML"
+                              hx-trigger="submit">
+                            <input type="hidden" name="trainday_id" value="{{ td.idTrainday }}">
+                            <input type="hidden" name="trainplan_id" value="{{ trainplan_id }}">
+                            
+                            <select name="exercise_id" required style="width: 100%; margin-bottom: 5px;">
+                                <option value="">Seleccionar ejercicio</option>
+                                {% for ex in exercises %}
+                                <option value="{{ ex.idExercise }}">{{ ex.name }} ({{ ex.musclegroup }})</option>
+                                {% endfor %}
+                            </select>       
+                            
+                            <input type="number" name="numSets" step="1" min="1" placeholder="Number of sets" required style="width: 100%; margin-bottom: 5px;">
+                            <input type="text" name="notes" placeholder="Notes (opcional)" style="width: 100%; margin-bottom: 5px;">
+                            
+                            <div style="display: flex; gap: 5px;">
+                                <button type="submit">Save</button>
+                                <button type="button" onclick="document.getElementById('form-new-trainday-exercise-{{td.idTrainday}}').style.display='none'">
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="float: left;">No hay training days para este plan</p>
+        {% endif %}
+    </div>
+
+    <!-- Botón nuevo trainday al lado -->
+    <div style="float: left; margin-left: 20px;">
+        <button onclick="document.getElementById('form-new-trainday').style.display='block'">
+            New training day
+        </button>
+
+        <!-- Formulario nuevo trainday (oculto inicialmente) -->
+        <div id="form-new-trainday" style="display: none; margin-top: 10px;">
+            <form method="POST" 
+                  action="{{ url_for('train.create_trainday') }}"
+                  hx-post="{{ url_for('train.create_trainday') }}"
+                  hx-target="#traindays-container"
+                  hx-swap="innerHTML"
+                  hx-trigger="submit">
+                <input type="text" name="name" placeholder="Trainday's name" required style="width: 100%; margin-bottom: 5px;">
+                <input type="hidden" name="trainplan_id" value="{{ trainplan_id }}">
+                
+                <div style="display: flex; gap: 5px;">
+                    <button type="submit">Save</button>
+                    <button type="button" onclick="document.getElementById('form-new-trainday').style.display='none'">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div style="clear: both;"></div>
+</div>

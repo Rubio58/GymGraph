@@ -1,0 +1,73 @@
+<!-- templates/train/index.html -->
+{% extends "base.html" %}
+
+{% block content %}
+
+<!--PARA DEBUG
+{% with messages = get_flashed_messages(with_categories=true) %} 
+    {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                    <button type="button" class="close-btn" onclick="this.parentElement.style.display='none'">&times;</button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}-->
+
+    <div style="display: flex;">
+        <!-- Columna izquierda -->
+        <div style="width: 300px; padding: 10px; border-right: 1px solid #ccc;">
+            <h3>Plans</h3>
+            <ul style="list-style-type: none; padding-left: 0;">
+                {% for tp in trainplans %}
+                <li style="margin-bottom: 10px; padding: 8px; background-color: #f5f5f5; display: flex; align-items: center; justify-content: space-between;">
+                    <strong>{{ tp.name }}</strong>
+                    <div>
+                        <!-- Botón select con htmx -->
+                        <button 
+                            hx-get="{{ url_for('train.get_traindays', trainplan_id=tp.idTrainplan) }}"
+                            hx-target="#traindays-container"
+                            hx-trigger="click"
+                            hx-swap="innerHTML">
+                            select
+                        </button>
+                        
+                        <!-- Formulario delete -->
+                        <form method="POST" action="{{ url_for('train.delete_trainplan') }}" style="display: inline;">
+                            <input type="hidden" name="trainplan_id" value="{{ tp.idTrainplan }}">
+                            <button type="submit" onclick="return confirm('¿Estás seguro?')">delete</button>
+                        </form>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            
+            <!-- Botón new plan -->
+            <button onclick="document.getElementById('form-nuevo-plan').style.display='block'">new plan</button>
+            
+            <!-- Formulario nuevo plan -->
+            <div id="form-nuevo-plan" style="display: none; margin-top: 10px;">
+                <form method="POST" action="{{ url_for('train.create_trainplan') }}">
+                    <input type="text" name="name" placeholder="Plan's name" required>
+                    <button type="submit">Guardar</button>
+                    <button type="button" onclick="document.getElementById('form-nuevo-plan').style.display='none'">Cancelar</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Columna derecha -->
+        <div style="flex: 1; padding: 10px;">
+            <!-- Contenedor para traindays -->
+            <div id="traindays-container" style="display: flex; flex-wrap: wrap; gap: 15px;">
+                <p>Selecciona un plan para ver sus training days</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Incluir htmx desde CDN -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    
+{% endblock %}

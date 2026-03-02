@@ -1,0 +1,32 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}GG{% endblock %}</title>
+    <!-- tus estilos, etc -->
+</head>
+<body>
+    <!-- Navbar (se ve siempre) -->
+    <nav class="navbar">
+        <!-- ... tu navbar ... -->
+        <div class="navbar-menu">
+            {% if current_user.is_authenticated %}
+                <span>Hola, {{ current_user.username }}</span>
+                <a href="{{ url_for('macros.index') }}">Macros</a>
+                <a href="{{ url_for('train.index') }}">Training Plan</a>  
+                <a href="{{ url_for('auth.dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}">Iniciar sesión</a>
+                <a href="{{ url_for('auth.signup') }}">Registrarse</a>
+            {% endif %}
+        </div>
+    </nav>
+    
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer, scripts, etc -->
+</body>
+</html>

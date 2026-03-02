@@ -1,0 +1,30 @@
+<!-- templates/dashboard.html -->
+{% extends "base.html" %}
+
+{% block title %}Dashboard - GG Fitness{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto; background: white; padding: 2rem; border-radius: 10px;">
+    <h1>📊 Dashboard</h1>
+    <p>Bienvenido, <strong>{{ current_user.username }}</strong>!</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 2rem 0;">
+        <a href="{{ url_for('macros.index') }}" 
+           style="display: block; padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 10px; text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🍽️</div>
+            <div style="font-size: 1.2rem;">Macros</div>
+            <div style="font-size: 0.9rem; opacity: 0.9;">Registra tus comidas</div>
+        </a>
+        
+        <a href="#" style="display: block; padding: 2rem; background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; text-decoration: none; border-radius: 10px; text-align: center; opacity: 0.6;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🏋️</div>
+            <div style="font-size: 1.2rem;">Entrenos</div>
+            <div style="font-size: 0.9rem;">Próximamente</div>
+        </a>
+    </div>
+    
+    <p style="text-align: center; margin-top: 2rem;">
+        <a href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
+    </p>
+</div>
+{% endblock %}
