@@ -1,4 +1,5 @@
 # app.py - PUNTO DE ENTRADA (solo configuración)
+import os
 from flask import Flask
 from flask_login import LoginManager
 from controllers import CurrentUser
@@ -6,7 +7,7 @@ from database import get_db
 
 # Crear la app
 app = Flask(__name__)
-app.secret_key = 'clave-super-secreta'
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
 
 # Configurar Flask-Login
 login_manager = LoginManager()
@@ -35,6 +36,9 @@ app.register_blueprint(food_bp)
 
 from controllers.train_controller import train_bp
 app.register_blueprint(train_bp)
+
+from controllers.dashboard_controller import dashboard_bp
+app.register_blueprint(dashboard_bp)
 
 if __name__ == '__main__':
     app.run(debug=True)

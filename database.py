@@ -2,9 +2,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
 
-DATABASE_URL = "mysql+pymysql://USUARIO:CONTRASEÑA@localhost/NOMBREBD"
+DATABASE_URL = "mysql+pymysql://gymgraph:GymGraph2026@localhost/gymgraph"
 
-engine = create_engine(DATABASE_URL,echo=True,)
+engine = create_engine(DATABASE_URL, echo=False)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
