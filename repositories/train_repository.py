@@ -45,12 +45,11 @@ class TrainRepository:
     def create_trainday(self, db: Session, trainplan_id:int, name:string, user_id:int):
         trainday=Trainday(
             name=name,
-            Trainplan_idTrainplan=trainplan_id,
-            Trainplan_User_idUser=user_id
+            Trainplan_idTrainplan=trainplan_id
         )
         db.add(trainday)
         db.flush()
-        return    
+        return trainday    
 
     def delete_trainday(self, db:Session, trainday_id:int):
         td = db.query(Trainday).filter(Trainday.idTrainday == trainday_id)
@@ -65,13 +64,11 @@ class TrainRepository:
             numSets=numSets,
             Exercise_idExercise=exercise_id,
             Trainday_idTrainday=trainday_id,
-            Trainday_Trainplan_idTrainplan=trainplan_id,
-            Trainday_Trainplan_User_idUser=user_id,
             notes=notes
         )
         db.add(traindayexercise)
         db.flush()
-        return
+        return traindayexercise
     
     def get_exercise_by_id(self, db:Session, exercise_id:int):
         return db.query(Exercise).filter(Exercise.idExercise == exercise_id).first()

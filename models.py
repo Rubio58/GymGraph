@@ -15,7 +15,7 @@ class Exercise(Base):
         Index('idExercise_UNIQUE', 'idExercise', unique=True),
     )
 
-    idExercise: Mapped[int] = mapped_column(Integer, primary_key=True)
+    idExercise: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(45), nullable=False)
     musclegroup: Mapped[str] = mapped_column(String(45), nullable=False)
 
@@ -29,7 +29,7 @@ class User(Base):
         Index('username_UNIQUE', 'username', unique=True)
     )
 
-    idUser: Mapped[int] = mapped_column(Integer, primary_key=True)
+    idUser: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     username: Mapped[str] = mapped_column(String(45), nullable=False)
     passwd: Mapped[str] = mapped_column(String(255), nullable=False)
 
@@ -47,12 +47,12 @@ class Food(Base):
         Index('idFood_UNIQUE', 'idFood', unique=True)
     )
 
-    idFood: Mapped[int] = mapped_column(Integer, primary_key=True)
+    idFood: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(45), nullable=False)
     protein_p100: Mapped[decimal.Decimal] = mapped_column(DECIMAL(5, 2), nullable=False)
     carbs_p100: Mapped[decimal.Decimal] = mapped_column(DECIMAL(5, 2), nullable=False)
     fats_p100: Mapped[decimal.Decimal] = mapped_column(DECIMAL(5, 2), nullable=False)
-    User_idUser: Mapped[int] = mapped_column(Integer, primary_key=True)
+    User_idUser: Mapped[int] = mapped_column(Integer, nullable=False)
     kcal_p100: Mapped[Optional[decimal.Decimal]] = mapped_column(DECIMAL(5, 2))
 
     User_: Mapped['User'] = relationship('User', back_populates='Food')
@@ -69,7 +69,7 @@ class Meal(Base):
 
     idMeal: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     date: Mapped[str] = mapped_column(String(45), nullable=False)
-    User_idUser: Mapped[int] = mapped_column(Integer, primary_key=True)
+    User_idUser: Mapped[int] = mapped_column(Integer, nullable=False)
 
     User_: Mapped['User'] = relationship('User', back_populates='Meal')
     Meal_Food: Mapped[list['MealFood']] = relationship('MealFood', back_populates='Meal_')
@@ -83,11 +83,11 @@ class Objective(Base):
         Index('idObjective_UNIQUE', 'idObjective', unique=True)
     )
 
-    idObjective: Mapped[int] = mapped_column(Integer, primary_key=True)
+    idObjective: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     Protein: Mapped[int] = mapped_column(Integer, nullable=False)
     Carbs: Mapped[int] = mapped_column(Integer, nullable=False)
     Fats: Mapped[int] = mapped_column(Integer, nullable=False)
-    User_idUser: Mapped[int] = mapped_column(Integer, primary_key=True)
+    User_idUser: Mapped[int] = mapped_column(Integer, nullable=False)
 
     User_: Mapped['User'] = relationship('User', back_populates='Objective')
 
@@ -102,7 +102,7 @@ class Trainplan(Base):
 
     idTrainplan: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(45), nullable=False)
-    User_idUser: Mapped[int] = mapped_column(Integer, primary_key=True)
+    User_idUser: Mapped[int] = mapped_column(Integer, nullable=False)
 
     User_: Mapped['User'] = relationship('User', back_populates='Trainplan')
     Trainday: Mapped[list['Trainday']] = relationship('Trainday', back_populates='Trainplan_')
@@ -112,17 +112,16 @@ class MealFood(Base):
     __tablename__ = 'Meal_Food'
     __table_args__ = (
         ForeignKeyConstraint(['Food_idFood'], ['Food.idFood'], ondelete='CASCADE', onupdate='CASCADE', name='fk_Meal_Food_Food1'),
-        ForeignKeyConstraint(['Meal_idMeal', 'Meal_User_idUser'], ['Meal.idMeal', 'Meal.User_idUser'], ondelete='CASCADE', onupdate='CASCADE', name='fk_Meal_Food_Meal1'),
+        ForeignKeyConstraint(['Meal_idMeal'], ['Meal.idMeal'], ondelete='CASCADE', onupdate='CASCADE', name='fk_Meal_Food_Meal1'),
         Index('fk_Meal_Food_Food1_idx', 'Food_idFood'),
-        Index('fk_Meal_Food_Meal1_idx', 'Meal_idMeal', 'Meal_User_idUser'),
+        Index('fk_Meal_Food_Meal1_idx', 'Meal_idMeal'),
         Index('idMeal_Food_UNIQUE', 'idMeal_Food', unique=True)
     )
 
-    idMeal_Food: Mapped[int] = mapped_column(Integer, primary_key=True)
+    idMeal_Food: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     grams: Mapped[decimal.Decimal] = mapped_column(DECIMAL(6, 2), nullable=False)
-    Food_idFood: Mapped[int] = mapped_column(Integer, primary_key=True)
-    Meal_idMeal: Mapped[int] = mapped_column(Integer, primary_key=True)
-    Meal_User_idUser: Mapped[int] = mapped_column(Integer, primary_key=True)
+    Food_idFood: Mapped[int] = mapped_column(Integer, nullable=False)
+    Meal_idMeal: Mapped[int] = mapped_column(Integer, nullable=False)
 
     Food_: Mapped['Food'] = relationship('Food', back_populates='Meal_Food')
     Meal_: Mapped['Meal'] = relationship('Meal', back_populates='Meal_Food')
@@ -131,15 +130,14 @@ class MealFood(Base):
 class Trainday(Base):
     __tablename__ = 'Trainday'
     __table_args__ = (
-        ForeignKeyConstraint(['Trainplan_idTrainplan', 'Trainplan_User_idUser'], ['Trainplan.idTrainplan', 'Trainplan.User_idUser'], ondelete='CASCADE', onupdate='CASCADE', name='fk_Trainday_Trainplan1'),
-        Index('fk_Trainday_Trainplan1_idx', 'Trainplan_idTrainplan', 'Trainplan_User_idUser'),
+        ForeignKeyConstraint(['Trainplan_idTrainplan'], ['Trainplan.idTrainplan'], ondelete='CASCADE', onupdate='CASCADE', name='fk_Trainday_Trainplan1'),
+        Index('fk_Trainday_Trainplan1_idx', 'Trainplan_idTrainplan'),
         Index('idTrainday_UNIQUE', 'idTrainday', unique=True)
     )
 
-    idTrainday: Mapped[int] = mapped_column(Integer, primary_key=True)
+    idTrainday: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(45), nullable=False)
-    Trainplan_idTrainplan: Mapped[int] = mapped_column(Integer, primary_key=True)
-    Trainplan_User_idUser: Mapped[int] = mapped_column(Integer, primary_key=True)
+    Trainplan_idTrainplan: Mapped[int] = mapped_column(Integer, nullable=False)
 
     Trainplan_: Mapped['Trainplan'] = relationship('Trainplan', back_populates='Trainday')
     Trainday_exercise: Mapped[list['TraindayExercise']] = relationship('TraindayExercise', back_populates='Trainday_')
@@ -149,18 +147,16 @@ class TraindayExercise(Base):
     __tablename__ = 'Trainday_exercise'
     __table_args__ = (
         ForeignKeyConstraint(['Exercise_idExercise'], ['Exercise.idExercise'], ondelete='CASCADE', onupdate='CASCADE', name='fk_Trainday_exercise_Exercise1'),
-        ForeignKeyConstraint(['Trainday_idTrainday', 'Trainday_Trainplan_idTrainplan', 'Trainday_Trainplan_User_idUser'], ['Trainday.idTrainday', 'Trainday.Trainplan_idTrainplan', 'Trainday.Trainplan_User_idUser'], ondelete='CASCADE', onupdate='CASCADE', name='fk_Trainday_exercise_Trainday1'),
+        ForeignKeyConstraint(['Trainday_idTrainday'], ['Trainday.idTrainday'], ondelete='CASCADE', onupdate='CASCADE', name='fk_Trainday_exercise_Trainday1'),
         Index('fk_Trainday_exercise_Exercise1_idx', 'Exercise_idExercise'),
-        Index('fk_Trainday_exercise_Trainday1_idx', 'Trainday_idTrainday', 'Trainday_Trainplan_idTrainplan', 'Trainday_Trainplan_User_idUser'),
+        Index('fk_Trainday_exercise_Trainday1_idx', 'Trainday_idTrainday'),
         Index('idTrainday_exercise_UNIQUE', 'idTrainday_exercise', unique=True)
     )
 
     idTrainday_exercise: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     numSets: Mapped[int] = mapped_column(Integer, nullable=False)
-    Exercise_idExercise: Mapped[int] = mapped_column(Integer, primary_key=True)
-    Trainday_idTrainday: Mapped[int] = mapped_column(Integer, primary_key=True)
-    Trainday_Trainplan_idTrainplan: Mapped[int] = mapped_column(Integer, primary_key=True)
-    Trainday_Trainplan_User_idUser: Mapped[int] = mapped_column(Integer, primary_key=True)
+    Exercise_idExercise: Mapped[int] = mapped_column(Integer, nullable=False)
+    Trainday_idTrainday: Mapped[int] = mapped_column(Integer, nullable=False)
     notes: Mapped[Optional[str]] = mapped_column(String(45))
 
     Exercise_: Mapped['Exercise'] = relationship('Exercise', back_populates='Trainday_exercise')
@@ -176,10 +172,10 @@ class Set(Base):
         Index('idSet_UNIQUE', 'idSet', unique=True)
     )
 
-    idSet: Mapped[int] = mapped_column(Integer, primary_key=True)
+    idSet: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     weight: Mapped[decimal.Decimal] = mapped_column(DECIMAL(5, 2), nullable=False)
     reps: Mapped[int] = mapped_column(Integer, nullable=False)
     date: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
-    Trainday_exercise_idTrainday_exercise: Mapped[int] = mapped_column(Integer, primary_key=True)
+    Trainday_exercise_idTrainday_exercise: Mapped[int] = mapped_column(Integer, nullable=False)
 
     Trainday_exercise: Mapped['TraindayExercise'] = relationship('TraindayExercise', back_populates='Set')

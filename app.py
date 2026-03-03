@@ -40,5 +40,8 @@ app.register_blueprint(train_bp)
 from controllers.dashboard_controller import dashboard_bp
 app.register_blueprint(dashboard_bp)
 
+from controllers.analysis_controller import analysis_bp
+app.register_blueprint(analysis_bp)
+
 if __name__ == '__main__':
     app.run(debug=True)

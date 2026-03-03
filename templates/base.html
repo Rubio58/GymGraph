@@ -1,20 +1,34 @@
 <!-- templates/base.html -->
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>{% block title %}GG{% endblock %}</title>
-    <!-- tus estilos, etc -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GymGraph{% endblock %}</title>
+    
+    <!-- Fuentes Google - Estética retro-moderna editorial -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Navbar (se ve siempre) -->
+    <!-- Navegación -->
     <nav class="navbar">
-        <!-- ... tu navbar ... -->
+        <div class="nav-brand">
+            <a href="{{ url_for('auth.dashboard') if current_user.is_authenticated else url_for('auth.login') }}">
+                <span class="logo">💪</span> GymGraph
+            </a>
+        </div>
+        
         <div class="navbar-menu">
             {% if current_user.is_authenticated %}
                 <span>Hola, {{ current_user.username }}</span>
-                <a href="{{ url_for('macros.index') }}">Macros</a>
-                <a href="{{ url_for('train.index') }}">Training Plan</a>  
                 <a href="{{ url_for('auth.dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('macros.index') }}">Macros</a>
+                <a href="{{ url_for('train.index') }}">Training Plan</a>
                 <a href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
             {% else %}
                 <a href="{{ url_for('auth.login') }}">Iniciar sesión</a>
@@ -23,11 +37,30 @@
         </div>
     </nav>
     
+    <!-- Mensajes Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+            {{ message }}
+            <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Contenido principal -->
     <main class="container">
         {% block content %}{% endblock %}
     </main>
-    
-    <!-- Footer, scripts, etc -->
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 GymGraph - Huilin Jin, Arkaitz Cambra, Andrés Salamanca</p>
+    </footer>
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>
