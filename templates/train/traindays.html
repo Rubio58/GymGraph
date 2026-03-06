@@ -1,28 +1,97 @@
 <!-- templates/train/traindays.html -->
 
-<div>
-    <!-- Traindays en línea horizontal -->
-    <div style="float: left;">
+<div style="display: flex; gap: 20px;">
+    <!-- Columna izquierda: Lista vertical de traindays -->
+    <div style="flex: 3; min-width: 300px;">
         {% if traindays and traindays|length > 0 %}
             {% for td in traindays %}
-            <div style="width: 220px; padding: 15px; background-color: #f0f0f0; border-radius: 5px; text-align: center; float: left; margin-right: 10px; margin-bottom: 10px;">
-                <p style="margin: 0; font-weight: bold;">{{ td.name }}</p>
+            <div style="width: 100%; padding: 15px; background-color: #f0f0f0; border-radius: 5px; margin-bottom: 15px;">
+                <!-- Cabecera del trainday -->
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                    <p style="margin: 0; font-weight: bold; font-size: 1.1em;">{{ td.name }}</p>
+                    <div>
+                        <!-- Botón edit trainday -->
+                        <button onclick="document.getElementById('form-edit-trainday-{{td.idTrainday}}').style.display='block'">edit</button>
+                        
+                        <!-- Formulario delete trainday -->
+                        <form method="POST" 
+                              action="{{ url_for('train.delete_trainday') }}" 
+                              style="display: inline;"
+                              hx-post="{{ url_for('train.delete_trainday') }}"
+                              hx-target="#traindays-container"
+                              hx-swap="innerHTML"
+                              hx-trigger="submit"
+                              onsubmit="return confirm('¿Estás seguro?')">
+                            <input type="hidden" name="trainday_id" value="{{ td.idTrainday }}">
+                            <input type="hidden" name="trainplan_id" value="{{ trainplan_id }}">
+                            <button type="submit">delete</button>
+                        </form>
+                    </div>
+                </div>
                 
-                <!-- Mostrar ejercicios existentes -->
+                <!-- Formulario edit trainday (oculto inicialmente) -->
+                <div id="form-edit-trainday-{{td.idTrainday}}" style="display: none; margin-bottom: 10px; padding: 10px; background-color: #e0e0e0; border-radius: 5px;">
+                    <form method="POST" 
+                          action="{{ url_for('train.update_trainday') }}"
+                          hx-post="{{ url_for('train.update_trainday') }}"
+                          hx-target="#traindays-container"
+                          hx-swap="innerHTML"
+                          hx-trigger="submit">
+                        <div style="display: flex; gap: 5px;">
+                            <input type="text" name="name" placeholder="New name" required style="flex: 1;">
+                            <input type="hidden" name="trainday_id" value="{{ td.idTrainday }}">
+                            <button type="submit">Guardar</button>
+                            <button type="button" onclick="document.getElementById('form-edit-trainday-{{td.idTrainday}}').style.display='none'">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Ejercicios del trainday -->
                 {% if traindayexercises and traindayexercises|length > 0 %}
-                    <div style="margin-top: 10px; text-align: left; font-size: 0.9em; border-top: 1px solid #ccc; padding-top: 10px;">
+                    <div style="margin: 10px 0;">
                         {% for tde in traindayexercises %}
                             {% if tde.idTrainday == td.idTrainday %}
                                 <div style="background-color: #e0e0e0; margin: 5px 0; padding: 8px; border-radius: 3px;">
-                                    <div>
-                                        <strong>{{ tde.exercise_name }}</strong> - {{ tde.numSets }} series
-                                        {% if tde.musclegroup %}
-                                            <small>({{ tde.musclegroup }})</small>
-                                        {% endif %}
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <div style="flex: 1;">
+                                            <strong>{{ tde.exercise_name }}</strong> - {{ tde.numSets }} series
+                                            {% if tde.musclegroup %}
+                                                <small>({{ tde.musclegroup }})</small>
+                                            {% endif %}
+                                            <small style="color: #999;">(Orden: {{ tde.order }})</small>
+                                            {% if tde.notes %}
+                                                <div><small style="color: #666;">Nota: {{ tde.notes }}</small></div>
+                                            {% endif %}
+                                        </div>
+                                        <div style="display: flex; gap: 3px;">
+                                            <!-- Botones de orden -->
+                                            <button hx-post="{{ url_for('train.move_traindayexercise', traindayexercise_id=tde.idTrainday_exercise, direction='up', trainplan_id=trainplan_id) }}"
+                                                    hx-target="#traindays-container"
+                                                    hx-swap="innerHTML"
+                                                    hx-trigger="click"
+                                                    style="padding: 2px 6px;">↑</button>
+                                            
+                                            <button hx-post="{{ url_for('train.move_traindayexercise', traindayexercise_id=tde.idTrainday_exercise, direction='down', trainplan_id=trainplan_id) }}"
+                                                    hx-target="#traindays-container"
+                                                    hx-swap="innerHTML"
+                                                    hx-trigger="click"
+                                                    style="padding: 2px 6px;">↓</button>
+                                            
+                                            <!-- Botón delete ejercicio -->
+                                            <form method="POST" 
+                                                action="{{ url_for('train.delete_traindayexercise') }}" 
+                                                style="display: inline;"
+                                                hx-post="{{ url_for('train.delete_traindayexercise') }}"
+                                                hx-target="#traindays-container"
+                                                hx-swap="innerHTML"
+                                                hx-trigger="submit"
+                                                onsubmit="return confirm('¿Estás seguro?')">
+                                                <input type="hidden" name="traindayexercise_id" value="{{ tde.idTrainday_exercise }}">
+                                                <input type="hidden" name="trainplan_id" value="{{ trainplan_id }}">
+                                                <button type="submit" style="padding: 2px 6px;">🗑️</button>
+                                            </form>
+                                        </div>
                                     </div>
-                                    {% if tde.notes %}
-                                        <small style="color: #666;">{{ tde.notes }}</small>
-                                    {% endif %}
                                 </div>
                             {% endif %}
                         {% endfor %}
@@ -36,7 +105,7 @@
                     </button>
 
                     <!-- Formulario Add exercise (oculto inicialmente) -->
-                    <div id="form-new-trainday-exercise-{{td.idTrainday}}" style="display: none; margin-top: 10px; text-align: left;">
+                    <div id="form-new-trainday-exercise-{{td.idTrainday}}" style="display: none; margin-top: 10px; padding: 10px; background-color: #e0e0e0; border-radius: 5px;">
                         <form method="POST" 
                               action="{{ url_for('train.create_traindayexercise') }}"
                               hx-post="{{ url_for('train.create_traindayexercise') }}"
@@ -53,8 +122,10 @@
                                 {% endfor %}
                             </select>       
                             
-                            <input type="number" name="numSets" step="1" min="1" placeholder="Number of sets" required style="width: 100%; margin-bottom: 5px;">
-                            <input type="text" name="notes" placeholder="Notes (opcional)" style="width: 100%; margin-bottom: 5px;">
+                            <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                                <input type="number" name="numSets" step="1" min="1" placeholder="Series" required style="flex: 1;">
+                                <input type="text" name="notes" placeholder="Notas (opcional)" style="flex: 2;">
+                            </div>
                             
                             <div style="display: flex; gap: 5px;">
                                 <button type="submit">Save</button>
@@ -65,38 +136,90 @@
                         </form>
                     </div>
                 </div>
+                
+                <button style="margin-top: 10px;">Workout</button>
             </div>
             {% endfor %}
+            
+            <!-- Botón nuevo trainday debajo de la lista -->
+            <div style="margin-top: 20px;">
+                <button onclick="document.getElementById('form-new-trainday').style.display='block'">
+                    + New training day
+                </button>
+
+                <!-- Formulario nuevo trainday (oculto inicialmente) -->
+                <div id="form-new-trainday" style="display: none; margin-top: 10px; padding: 15px; background-color: #f0f0f0; border-radius: 5px;">
+                    <form method="POST" 
+                          action="{{ url_for('train.create_trainday') }}"
+                          hx-post="{{ url_for('train.create_trainday') }}"
+                          hx-target="#traindays-container"
+                          hx-swap="innerHTML"
+                          hx-trigger="submit">
+                        <div style="display: flex; gap: 5px;">
+                            <input type="text" name="name" placeholder="Trainday's name" required style="flex: 1;">
+                            <input type="hidden" name="trainplan_id" value="{{ trainplan_id }}">
+                            <button type="submit">Save</button>
+                            <button type="button" onclick="document.getElementById('form-new-trainday').style.display='none'">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
         {% else %}
-            <p style="float: left;">No hay training days para este plan</p>
+            <p>No hay training days para este plan</p>
+            <!-- Botón nuevo trainday cuando no hay ninguno -->
+            <div style="margin-top: 20px;">
+                <button onclick="document.getElementById('form-new-trainday').style.display='block'">
+                    + New training day
+                </button>
+                <div id="form-new-trainday" style="display: none; margin-top: 10px; padding: 15px; background-color: #f0f0f0; border-radius: 5px;">
+                    <form method="POST" 
+                          action="{{ url_for('train.create_trainday') }}"
+                          hx-post="{{ url_for('train.create_trainday') }}"
+                          hx-target="#traindays-container"
+                          hx-swap="innerHTML"
+                          hx-trigger="submit">
+                        <div style="display: flex; gap: 5px;">
+                            <input type="text" name="name" placeholder="Trainday's name" required style="flex: 1;">
+                            <input type="hidden" name="trainplan_id" value="{{ trainplan_id }}">
+                            <button type="submit">Save</button>
+                            <button type="button" onclick="document.getElementById('form-new-trainday').style.display='none'">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         {% endif %}
     </div>
-
-    <!-- Botón nuevo trainday al lado -->
-    <div style="float: left; margin-left: 20px;">
-        <button onclick="document.getElementById('form-new-trainday').style.display='block'">
-            New training day
-        </button>
-
-        <!-- Formulario nuevo trainday (oculto inicialmente) -->
-        <div id="form-new-trainday" style="display: none; margin-top: 10px;">
-            <form method="POST" 
-                  action="{{ url_for('train.create_trainday') }}"
-                  hx-post="{{ url_for('train.create_trainday') }}"
-                  hx-target="#traindays-container"
-                  hx-swap="innerHTML"
-                  hx-trigger="submit">
-                <input type="text" name="name" placeholder="Trainday's name" required style="width: 100%; margin-bottom: 5px;">
-                <input type="hidden" name="trainplan_id" value="{{ trainplan_id }}">
-                
-                <div style="display: flex; gap: 5px;">
-                    <button type="submit">Save</button>
-                    <button type="button" onclick="document.getElementById('form-new-trainday').style.display='none'">
-                        Cancel
-                    </button>
+    
+    <!-- Columna derecha FIJA: Totales por grupo muscular -->
+    <div style="flex: 1; min-width: 250px;">
+        <div style="padding: 15px; background-color: #e8f4f8; border-radius: 5px; border: 1px solid #b0d4e0; position: sticky; top: 20px;">
+            <h3 style="margin-top: 0; text-align: center; border-bottom: 1px solid #b0d4e0; padding-bottom: 10px;">
+                Total sets
+            </h3>
+            
+            {% if musclegroup_totals and musclegroup_totals|length > 0 %}
+                <div style="margin: 10px 0;">
+                    {% for musclegroup, total in musclegroup_totals.items() %}
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding: 5px 0; border-bottom: 1px dashed #b0d4e0;">
+                        <span><strong>{{ musclegroup }}</strong></span>
+                        <span>{{ total }} series</span>
+                    </div>
+                    {% endfor %}
                 </div>
-            </form>
+                <div style="display: flex; justify-content: space-between; font-weight: bold; margin-top: 15px; padding-top: 10px; border-top: 2px solid #b0d4e0;">
+                    <span>TOTAL</span>
+                    <span>{{ musclegroup_totals.values()|sum }} series</span>
+                </div>
+            {% else %}
+                <p style="text-align: center; color: #666; margin: 20px 0;">
+                    No hay ejercicios<br>en este plan
+                </p>
+            {% endif %}
         </div>
     </div>
-    <div style="clear: both;"></div>
 </div>

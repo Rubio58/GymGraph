@@ -36,7 +36,7 @@ def create_trainplan():
 def delete_trainplan():
     
     try:
-        trainplan_id = int(request.form.get('trainplan_id'))  # Convertir aquí
+        trainplan_id = int(request.form.get('trainplan_id'))  
     except (TypeError, ValueError):
         flash('ID de plan inválido', 'error')
         return redirect(url_for('train.index'))
@@ -50,6 +50,107 @@ def delete_trainplan():
 
     return redirect(url_for('train.index'))
 
+@train_bp.route('/delete-trainday', methods=['POST'])
+@login_required
+def delete_trainday():
+    try:
+        print("=== DELETE TRAINDAY ===")
+        print(f"Form data: {request.form}")
+        
+        trainplan_id = int(request.form.get('trainplan_id'))
+        trainday_id = int(request.form.get('trainday_id'))
+        
+        print(f"trainplan_id: {trainplan_id} (tipo: {type(trainplan_id)})")
+        print(f"trainday_id: {trainday_id} (tipo: {type(trainday_id)})")
+        
+    except (TypeError, ValueError) as e:
+        print(f"ERROR de conversión: {e}")
+        flash('ID inválido', 'error')
+        return redirect(url_for('train.index'))
+    
+    train_service = TrainService()
+    result = train_service.delete_trainday(trainday_id)
+    
+    print(f"Resultado del servicio: {result}")
+    
+    if result.get('success'):
+        print("Eliminación exitosa")
+        flash('Training day eliminado correctamente', 'success')
+    else:
+        print(f"Error en eliminación: {result.get('error')}")
+        flash(f'Error: {result.get("error")}', 'error')
+    
+    return get_traindays(trainplan_id)
+
+@train_bp.route('/delete-traindayexercise', methods=['POST'])
+@login_required
+def delete_traindayexercise():
+    try:
+
+        
+        trainplan_id = int(request.form.get('trainplan_id'))
+        traindayexercise_id = int(request.form.get('traindayexercise_id'))
+        
+        
+    except (TypeError, ValueError) as e:
+        print(f"ERROR de conversión: {e}")
+        flash('ID inválido', 'error')
+        return redirect(url_for('train.index'))
+    
+    train_service = TrainService()
+    result = train_service.delete_traindayexercise(traindayexercise_id)
+    
+    print(f"Resultado del servicio: {result}")
+    
+    if result.get('success'):
+        print("Eliminación exitosa")
+
+    else:
+        print(f"Error en eliminación: {result.get('error')}")
+        flash(f'Error: {result.get("error")}', 'error')
+    
+    return get_traindays(trainplan_id)
+
+@train_bp.route('/update-trainplan', methods=['POST'])
+@login_required
+def update_trainplan():
+    
+    try:
+        
+        trainplan_id = request.form.get('trainplan_id')
+        name = request.form.get('name')
+    except (TypeError, ValueError):
+        flash('ID de plan inválido', 'error')
+        return redirect(url_for('train.index'))
+
+    if not trainplan_id:
+        flash('Training plan not found', 'error')
+        return redirect(url_for('train.index'))
+    
+    train_service=TrainService()
+    train_service.update_traindayplan(trainplan_id,name)
+    return redirect(url_for('train.index'))
+
+@train_bp.route('/update-trainday', methods=['POST'])
+@login_required
+def update_trainday():
+    
+    try:
+        trainday_id = request.form.get('trainday_id')
+        name = request.form.get('name')
+
+    except (TypeError, ValueError):
+        flash('ID de plan inválido', 'error')
+        return redirect(url_for('train.index'))
+
+    train_service=TrainService()
+    trainday=train_service.get_trainday_by_id(trainday_id)
+    trainplan_id=trainday["Trainplan_idTrainplan"]
+    train_service.update_trainday(trainday_id,name)
+    
+
+    return get_traindays(trainplan_id)
+
 
 @train_bp.route('/get-traindays-html/<int:trainplan_id>')
 @login_required
@@ -61,15 +162,23 @@ def get_traindays(trainplan_id):
 
     for td in traindays:
         ejercicios_td = train_service.get_traindayexercises_by_trainday(td['idTrainday'])
-        traindayexercises.extend(ejercicios_td)  # Se usa extend en lugar de append para que sea una lista plana y no una lista de listas
+        traindayexercises.extend(ejercicios_td)
     
-    # Renderizar un template parcial que contiene los traindays
+    # Calcular total de series por grupo muscular
+    musclegroup_totals = {}
+    for tde in traindayexercises:
+        musclegroup = tde['musclegroup']
+        numSets = tde['numSets']
+        musclegroup_totals[musclegroup] = musclegroup_totals.get(musclegroup, 0) + numSets
+    
+    # Renderizar el template parcial 
     return render_template(
         'train/traindays.html',
         traindays=traindays,
         traindayexercises=traindayexercises,
         trainplan_id=trainplan_id,
-        exercises=exercises
+        exercises=exercises,
+        musclegroup_totals=musclegroup_totals 
     )
 
 @train_bp.route('/create-trainday', methods=['POST'])
@@ -115,3 +224,15 @@ def create_traindayexercise():
     
     # Redirigir a la página principal
     return get_traindays(trainplan_id)
+
+@train_bp.route('/move-traindayexercise/<int:traindayexercise_id>/<string:direction>/<int:trainplan_id>', methods=['POST'])
+@login_required
+def move_traindayexercise(traindayexercise_id, direction, trainplan_id):
+    train_service = TrainService()
+    result = train_service.move_traindayexercise(traindayexercise_id, direction)
+    
+    if result.get('success'):
+        return get_traindays(trainplan_id)
+    else:
+        flash(f'Error: {result.get("error")}', 'error')
+        return get_traindays(trainplan_id)

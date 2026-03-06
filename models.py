@@ -155,12 +155,13 @@ class TraindayExercise(Base):
         Index('idTrainday_exercise_UNIQUE', 'idTrainday_exercise', unique=True)
     )
 
-    idTrainday_exercise: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    idTrainday_exercise: Mapped[int] = mapped_column(Integer, primary_key=True,  autoincrement=True)
     numSets: Mapped[int] = mapped_column(Integer, nullable=False)
     Exercise_idExercise: Mapped[int] = mapped_column(Integer, primary_key=True)
     Trainday_idTrainday: Mapped[int] = mapped_column(Integer, primary_key=True)
     Trainday_Trainplan_idTrainplan: Mapped[int] = mapped_column(Integer, primary_key=True)
     Trainday_Trainplan_User_idUser: Mapped[int] = mapped_column(Integer, primary_key=True)
+    order: Mapped[int] = mapped_column(Integer, nullable=False)
     notes: Mapped[Optional[str]] = mapped_column(String(45))
 
     Exercise_: Mapped['Exercise'] = relationship('Exercise', back_populates='Trainday_exercise')

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 class TrainRepository:
 
     def get_trainplans_by_user_id(self, db: Session, user_id: int):
-        return db.query(Trainplan).filter(Trainplan.User_idUser == user_id)
+        return db.query(Trainplan).filter(Trainplan.User_idUser == user_id)    
     
     def create_trainplan(self, db: Session, user_id:int, name: string):
 
@@ -53,21 +53,22 @@ class TrainRepository:
         return    
 
     def delete_trainday(self, db:Session, trainday_id:int):
-        td = db.query(Trainday).filter(Trainday.idTrainday == trainday_id)
+        td = db.query(Trainday).filter(Trainday.idTrainday == trainday_id).first()
         db.delete(td)
         return    
     
     def get_all_exercises(self, db:Session):
         return db.query(Exercise).all()
     
-    def create_trainday_exercise(self, db:Session, numSets:int, exercise_id:int, trainday_id:int, trainplan_id:int, user_id:int, notes:string):
+    def create_trainday_exercise(self, db:Session, numSets:int, exercise_id:int, trainday_id:int, trainplan_id:int, user_id:int, notes:string, order:int):
         traindayexercise=TraindayExercise(
             numSets=numSets,
             Exercise_idExercise=exercise_id,
             Trainday_idTrainday=trainday_id,
             Trainday_Trainplan_idTrainplan=trainplan_id,
             Trainday_Trainplan_User_idUser=user_id,
-            notes=notes
+            notes=notes,
+            order=order
         )
         db.add(traindayexercise)
         db.flush()
@@ -75,3 +76,28 @@ class TrainRepository:
     
     def get_exercise_by_id(self, db:Session, exercise_id:int):
         return db.query(Exercise).filter(Exercise.idExercise == exercise_id).first()
+    
+    def delete_traindayexercise(self, db:Session, traindayexercise_id:int):
+        tde=db.query(TraindayExercise).filter(TraindayExercise.idTrainday_exercise==traindayexercise_id).first()
+        db.delete(tde)
+        return
+    def update_traindayexercise(self, db:Session, traindayexercise_id:int, new_notes:string, new_numsets:int):
+        tde=db.query(TraindayExercise).filter(TraindayExercise.idTrainday_exercise==traindayexercise_id).first()
+        tde.notes=new_notes
+        tde.numSets=new_numsets
+        return
+    
+    def update_trainday(self, db:Session, trainday_id:int, new_name:string):
+        td = db.query(Trainday).filter(Trainday.idTrainday == trainday_id).first()
+        td.name = new_name
+        return
+
+    def update_trainplan(self, db:Session, trainplan_id:int, new_name:string):
+        tp = db.query(Trainplan).filter(Trainplan.idTrainplan == trainplan_id).first()
+        tp.name=new_name
+        return
+    def get_trainday_by_id(self, db:Session, trainday_id:id):
+        return db.query(Trainday).filter(Trainday.idTrainday == trainday_id).first()
+    
+    def get_traindayexercise_by_id(self, db: Session, traindayexercise_id: int):
+        return db.query(TraindayExercise).filter(TraindayExercise.idTrainday_exercise == traindayexercise_id).first()

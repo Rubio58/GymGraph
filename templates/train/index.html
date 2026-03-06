@@ -34,7 +34,17 @@
                             hx-swap="innerHTML">
                             select
                         </button>
-                        
+                        <!--Botón editar-->
+                        <button onclick="document.getElementById('form-edit-trainplan-{{tp.idTrainplan}}').style.display='block'">edit</button>
+
+                        <div id="form-edit-trainplan-{{tp.idTrainplan}}" style="display: none; margin-top: 10px;">
+                            <form method="POST" action="{{ url_for('train.update_trainplan') }}">
+                                <input type="text" name="name" placeholder="New name" required>
+                                <input type="hidden" name="trainplan_id" value="{{ tp.idTrainplan }}">
+                                <button type="submit">Guardar</button>
+                                <button type="button" onclick="document.getElementById('form-edit-trainplan-{{tp.idTrainplan}}').style.display='none'">Cancelar</button>
+                            </form>
+                        </div>
                         <!-- Formulario delete -->
                         <form method="POST" action="{{ url_for('train.delete_trainplan') }}" style="display: inline;">
                             <input type="hidden" name="trainplan_id" value="{{ tp.idTrainplan }}">
@@ -46,7 +56,7 @@
             </ul>
             
             <!-- Botón new plan -->
-            <button onclick="document.getElementById('form-nuevo-plan').style.display='block'">new plan</button>
+            <button onclick="document.getElementById('form-nuevo-plan').style.display='block'">New plan</button>
             
             <!-- Formulario nuevo plan -->
             <div id="form-nuevo-plan" style="display: none; margin-top: 10px;">
