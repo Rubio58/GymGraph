@@ -12,8 +12,9 @@
         <div class="navbar-menu">
             {% if current_user.is_authenticated %}
                 <span>Hola, {{ current_user.username }}</span>
+                <a href="{{ url_for('train.index') }}">Training Plan</a>
                 <a href="{{ url_for('macros.index') }}">Macros</a>
-                <a href="{{ url_for('train.index') }}">Training Plan</a>  
+                <a href="{{ url_for('measurement.index') }}">Measurements</a>  
                 <a href="{{ url_for('auth.dashboard') }}">Dashboard</a>
                 <a href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
             {% else %}

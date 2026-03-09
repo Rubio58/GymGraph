@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
 
-DATABASE_URL = "mysql+pymysql://USUARIO:CONTRASEÑA@localhost/NOMBREBD"
+DATABASE_URL = "mysql+pymysql://root:a3143618791@localhost/gg"
 
 engine = create_engine(DATABASE_URL,echo=True,)
 

@@ -22,6 +22,19 @@ class Exercise(Base):
     Trainday_exercise: Mapped[list['TraindayExercise']] = relationship('TraindayExercise', back_populates='Exercise_')
 
 
+class MeasCat(Base):
+    __tablename__ = 'MeasCat'
+    __table_args__ = (
+        Index('idMeasCat_UNIQUE', 'idMeasCat', unique=True),
+    )
+
+    idMeasCat: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(45), nullable=False)
+    unit: Mapped[str] = mapped_column(String(45), nullable=False)
+
+    Meas: Mapped[list['Meas']] = relationship('Meas', back_populates='MeasCat_')
+
+
 class User(Base):
     __tablename__ = 'User'
     __table_args__ = (
@@ -35,6 +48,7 @@ class User(Base):
 
     Food: Mapped[list['Food']] = relationship('Food', back_populates='User_')
     Meal: Mapped[list['Meal']] = relationship('Meal', back_populates='User_')
+    Meas: Mapped[list['Meas']] = relationship('Meas', back_populates='User_')
     Objective: Mapped[list['Objective']] = relationship('Objective', back_populates='User_')
     Trainplan: Mapped[list['Trainplan']] = relationship('Trainplan', back_populates='User_')
 
@@ -75,6 +89,26 @@ class Meal(Base):
     Meal_Food: Mapped[list['MealFood']] = relationship('MealFood', back_populates='Meal_')
 
 
+class Meas(Base):
+    __tablename__ = 'Meas'
+    __table_args__ = (
+        ForeignKeyConstraint(['MeasCat_idMeasCat'], ['MeasCat.idMeasCat'], name='fk_Meas_MeasCat1'),
+        ForeignKeyConstraint(['User_idUser'], ['User.idUser'], name='fk_Meas_User1'),
+        Index('fk_Meas_MeasCat1_idx', 'MeasCat_idMeasCat'),
+        Index('fk_Meas_User1_idx', 'User_idUser'),
+        Index('idMeas_UNIQUE', 'idMeas', unique=True)
+    )
+
+    idMeas: Mapped[int] = mapped_column(Integer, primary_key=True)
+    val: Mapped[decimal.Decimal] = mapped_column(DECIMAL(5, 2), nullable=False)
+    date: Mapped[str] = mapped_column(String(45), nullable=False)
+    MeasCat_idMeasCat: Mapped[int] = mapped_column(Integer, primary_key=True)
+    User_idUser: Mapped[int] = mapped_column(Integer, primary_key=True)
+
+    MeasCat_: Mapped['MeasCat'] = relationship('MeasCat', back_populates='Meas')
+    User_: Mapped['User'] = relationship('User', back_populates='Meas')
+
+
 class Objective(Base):
     __tablename__ = 'Objective'
     __table_args__ = (
@@ -84,9 +118,9 @@ class Objective(Base):
     )
 
     idObjective: Mapped[int] = mapped_column(Integer, primary_key=True)
-    Protein: Mapped[int] = mapped_column(Integer, nullable=False)
-    Carbs: Mapped[int] = mapped_column(Integer, nullable=False)
-    Fats: Mapped[int] = mapped_column(Integer, nullable=False)
+    protein: Mapped[int] = mapped_column(Integer, nullable=False)
+    carbs: Mapped[int] = mapped_column(Integer, nullable=False)
+    fats: Mapped[int] = mapped_column(Integer, nullable=False)
     User_idUser: Mapped[int] = mapped_column(Integer, primary_key=True)
 
     User_: Mapped['User'] = relationship('User', back_populates='Objective')
@@ -155,7 +189,7 @@ class TraindayExercise(Base):
         Index('idTrainday_exercise_UNIQUE', 'idTrainday_exercise', unique=True)
     )
 
-    idTrainday_exercise: Mapped[int] = mapped_column(Integer, primary_key=True,  autoincrement=True)
+    idTrainday_exercise: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     numSets: Mapped[int] = mapped_column(Integer, nullable=False)
     Exercise_idExercise: Mapped[int] = mapped_column(Integer, primary_key=True)
     Trainday_idTrainday: Mapped[int] = mapped_column(Integer, primary_key=True)

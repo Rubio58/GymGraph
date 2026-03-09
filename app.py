@@ -36,5 +36,8 @@ app.register_blueprint(food_bp)
 from controllers.train_controller import train_bp
 app.register_blueprint(train_bp)
 
+from controllers.measurement_controller import measurement_bp
+app.register_blueprint(measurement_bp)
+
 if __name__ == '__main__':
     app.run(debug=True)
