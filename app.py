@@ -1,12 +1,17 @@
 # app.py - PUNTO DE ENTRADA (solo configuración)
+import os
+from dotenv import load_dotenv
 from flask import Flask
 from flask_login import LoginManager
 from controllers import CurrentUser
 from database import get_db
 
+# Cargar variables de entorno
+load_dotenv()
+
 # Crear la app
 app = Flask(__name__)
-app.secret_key = 'clave-super-secreta'
+app.secret_key = os.environ.get('SECRET_KEY', 'clave-super-secreta')
 
 # Configurar Flask-Login
 login_manager = LoginManager()
@@ -38,6 +43,12 @@ app.register_blueprint(train_bp)
 
 from controllers.measurement_controller import measurement_bp
 app.register_blueprint(measurement_bp)
+
+from controllers.dashboard_controller import dashboard_bp
+app.register_blueprint(dashboard_bp)
+
+from controllers.analysis_controller import analysis_bp
+app.register_blueprint(analysis_bp)
 
 if __name__ == '__main__':
     app.run(debug=True)

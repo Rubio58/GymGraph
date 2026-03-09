@@ -6,10 +6,10 @@ from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
 from services.analysis_service import AnalysisService
 
-analysis_bp = Blueprint('analysis', __name__)
+analysis_bp = Blueprint('analysis', __name__, url_prefix='/api/analysis')
 
 
-@analysis_bp.route('/api/analysis/metrics', methods=['GET'])
+@analysis_bp.route('/metrics', methods=['GET'])
 @login_required
 def get_available_metrics():
     """Lista todas las métricas disponibles"""
@@ -19,7 +19,7 @@ def get_available_metrics():
     return jsonify(metrics)
 
 
-@analysis_bp.route('/api/analysis/metric-data', methods=['GET'])
+@analysis_bp.route('/metric-data', methods=['GET'])
 @login_required
 def get_metric_data():
     """Obtiene datos de una métrica en un rango de tiempo"""
@@ -27,13 +27,13 @@ def get_metric_data():
     days = request.args.get('days', '30', type=int)
 
     service = AnalysisService()
-    data = service.get_metric_data(current_user.idUser, metric, days)
+    data = service.get_metric_data(current_user.id, metric, days)
     service.close()
 
     return jsonify(data)
 
 
-@analysis_bp.route('/api/analysis/correlation', methods=['GET'])
+@analysis_bp.route('/correlation', methods=['GET'])
 @login_required
 def calculate_correlation():
     """Calcula la correlación de Pearson entre dos métricas"""
@@ -45,7 +45,7 @@ def calculate_correlation():
         return jsonify({'error': 'Se requieren metric1 y metric2'}), 400
 
     service = AnalysisService()
-    result = service.calculate_correlation(current_user.idUser, metric1, metric2, days)
+    result = service.calculate_correlation(current_user.id, metric1, metric2, days)
     service.close()
 
     return jsonify(result)

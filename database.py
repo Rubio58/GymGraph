@@ -1,8 +1,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
+import os
 
-DATABASE_URL = "mysql+pymysql://root:a3143618791@localhost/gg"
+DATABASE_URL = os.getenv('DATABASE_URL', 'mysql+pymysql://gymgraph:cambrita2024@localhost/gymgraph')
 
 engine = create_engine(DATABASE_URL,echo=True,)
 
