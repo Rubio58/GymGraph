@@ -6,7 +6,7 @@
 <style>
 .dashboard-layout {
     display: grid;
-    grid-template-columns: 1fr 280px 1fr 280px;
+    grid-template-columns: 350px 1fr 260px;
     gap: 1.5rem;
     min-height: calc(100vh - 120px);
 }
@@ -26,14 +26,14 @@
     gap: 1rem;
     max-height: calc(100vh - 120px);
     overflow-y: auto;
-    grid-column: 4;
+    grid-column: 3;
 }
 
 .dashboard-main {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    grid-column: 2 / 4;
+    grid-column: 2;
 }
 
 .sidebar-section {
@@ -57,17 +57,17 @@
 
 .time-range-group {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 0.5rem;
 }
 
 .time-btn {
-    padding: 0.5rem 0.8rem;
+    padding: 0.65rem 0.8rem;
     border: 1px solid var(--border-light);
     border-radius: 4px;
     background: transparent;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 500;
     transition: var(--transition);
 }
@@ -143,24 +143,30 @@
     font-weight: 600;
 }
 
-/* Botones de métrica */
+/* Botones de métrica - una columna */
 .metric-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 0.5rem;
 }
 
 .metric-btn {
-    padding: 0.6rem 0.8rem;
+    padding: 0.75rem 1rem;
     border: 2px solid var(--border-light);
     border-radius: 6px;
     background: #fff;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 500;
     transition: var(--transition);
-    text-align: center;
+    text-align: left;
     color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
 }
 
 .metric-btn:hover {
@@ -290,18 +296,12 @@
         grid-template-columns: 1fr;
     }
     .dashboard-sidebar {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1rem;
+        display: block;
         max-height: none;
-        grid-column: auto;
     }
     .dashboard-period {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1rem;
+        display: block;
         max-height: none;
-        grid-column: auto;
     }
     .dashboard-main {
         grid-column: auto;
@@ -320,29 +320,20 @@
 <div class="dashboard-layout">
     <!-- SIDEBAR IZQUIERDO -->
     <aside class="dashboard-sidebar">
-        <!-- Selector de Modo -->
+        <!-- Sección Visualizar -->
         <div class="sidebar-section">
-            <h3>Análisis</h3>
-            <div class="mode-toggle">
-                <button class="mode-btn active" data-mode="single">Métrica</button>
-                <button class="mode-btn" data-mode="correlation">Correlación</button>
-            </div>
-        </div>
-
-        <!-- Modo Single (Métrica Única) -->
-        <div class="sidebar-section single-mode">
             <h3>Visualizar</h3>
             <div class="metric-buttons" id="metricButtonsContainer">
                 <!-- Se cargan dinámicamente -->
             </div>
-            <small style="display: block; margin-top: 0.8rem; color: #999; text-align: center;">
-                Haz click en los botones para añadir/quitar
+            <small style="display: block; margin-top: 0.8rem; color: #999; text-align: center; font-size: 0.75rem;">
+                Haz click para añadir/quitar
             </small>
         </div>
 
-        <!-- Modo Correlación -->
-        <div class="sidebar-section correlation-mode" style="display: none;">
-            <h3>Comparar Métricas</h3>
+        <!-- Sección Correlación (SIEMPRE VISIBLE, no es tab) -->
+        <div class="sidebar-section">
+            <h3>Correlación</h3>
             <div class="metric-pair">
                 <label>Primera métrica</label>
                 <select class="metric-select" id="metric1Select">
@@ -356,24 +347,6 @@
                 </select>
             </div>
             <button class="calc-correlation-btn">Calcular Correlación</button>
-        </div>
-
-        <!-- Sección de Correlación Adicional (SIEMPRE VISIBLE) -->
-        <div class="sidebar-section" style="background: linear-gradient(135deg, #fff8f3 0%, #fff5f0 100%); border: 1px solid #e8d5cc;">
-            <h3 style="background: linear-gradient(to right, #C67B5C, #d88972); -webkit-background-clip: text; -webkit-text-fill-color: transparent; color: #C67B5C;">Comparación Adicional</h3>
-            <div class="metric-pair">
-                <label>Métrica 1</label>
-                <select class="metric-select" id="correlationMetric1Select">
-                    <option value="">Cargando...</option>
-                </select>
-            </div>
-            <div class="metric-pair" style="margin-top: 1rem;">
-                <label>Métrica 2</label>
-                <select class="metric-select" id="correlationMetric2Select">
-                    <option value="">Cargando...</option>
-                </select>
-            </div>
-            <button class="calc-correlation-btn" id="calcAdditionalCorrelation">Analizar</button>
         </div>
     </aside>
 
@@ -394,7 +367,7 @@
     <aside class="dashboard-period">
         <div class="sidebar-section">
             <h3>Período</h3>
-            <div class="time-range-group" style="grid-template-columns: 1fr;">
+            <div class="time-range-group">
                 <button class="time-btn active" data-days="1">Hoy</button>
                 <button class="time-btn" data-days="7">7 días</button>
                 <button class="time-btn" data-days="30">30 días</button>
@@ -414,7 +387,6 @@
 <script>
 // Estado global
 let currentChart = null;
-let currentMode = 'single';
 let currentDays = 1;
 let customStartDate = null;
 let customEndDate = null;
@@ -442,8 +414,6 @@ async function loadMetrics() {
 
         const metric1Select = document.getElementById('metric1Select');
         const metric2Select = document.getElementById('metric2Select');
-        const correlationMetric1Select = document.getElementById('correlationMetric1Select');
-        const correlationMetric2Select = document.getElementById('correlationMetric2Select');
 
         const html = availableMetrics
             .map(m => `<option value="${m.id}">${m.name} (${m.unit})</option>`)
@@ -451,13 +421,8 @@ async function loadMetrics() {
 
         metric1Select.innerHTML = html;
         metric2Select.innerHTML = html;
-        correlationMetric1Select.innerHTML = html;
-        correlationMetric2Select.innerHTML = html;
-
         metric1Select.value = 'calories';
         metric2Select.value = 'volume';
-        correlationMetric1Select.value = 'calories';
-        correlationMetric2Select.value = 'volume';
 
         // Renderizar botones de métricas
         renderMetricButtons();
@@ -475,7 +440,7 @@ function renderMetricButtons() {
             <button class="metric-btn ${selectedMetrics.includes(m.id) ? 'active' : ''}" 
                     data-metric="${m.id}"
                     title="${m.name} (${m.unit})">
-                ${m.name.substring(0, 10)}
+                ${m.name} (${m.unit})
             </button>
         `)
         .join('');
@@ -502,7 +467,7 @@ function renderMetricButtons() {
 
 // Setup de event listeners
 function setupEventListeners() {
-    // Botones de tiempo (ahora en .dashboard-period)
+    // Botones de tiempo (en .dashboard-period)
     document.querySelectorAll('.dashboard-period .time-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             if (e.target.id === 'applyCustomPeriod') {
@@ -517,11 +482,7 @@ function setupEventListeners() {
                 currentDays = null;
                 document.querySelectorAll('.dashboard-period .time-btn:not(#applyCustomPeriod)').forEach(b => 
                     b.classList.remove('active'));
-                if (currentMode === 'single') {
-                    loadChart();
-                } else {
-                    loadCorrelation();
-                }
+                loadChart();
                 return;
             }
 
@@ -531,42 +492,12 @@ function setupEventListeners() {
             currentDays = parseInt(e.target.dataset.days);
             customStartDate = null;
             customEndDate = null;
-            
-            if (currentMode === 'single') {
-                loadChart();
-            } else {
-                loadCorrelation();
-            }
+            loadChart();
         });
     });
 
-    // Botones de modo
-    document.querySelectorAll('.mode-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            currentMode = e.target.dataset.mode;
-
-            document.querySelector('.single-mode').style.display = 
-                currentMode === 'single' ? 'block' : 'none';
-            document.querySelector('.correlation-mode').style.display = 
-                currentMode === 'correlation' ? 'block' : 'none';
-
-            hideMessage();
-
-            if (currentMode === 'single') {
-                loadChart();
-            } else {
-                loadCorrelation();
-            }
-        });
-    });
-
-    // Botón de calcular correlación (en tabs)
-    document.querySelector('.correlation-mode .calc-correlation-btn').addEventListener('click', loadCorrelation);
-    
-    // Botón de calcular correlación adicional (siempre visible)
-    document.getElementById('calcAdditionalCorrelation').addEventListener('click', loadAdditionalCorrelation);
+    // Botón de calcular correlación
+    document.querySelector('.calc-correlation-btn').addEventListener('click', loadCorrelation);
 }
 
 // Mostrar mensaje
@@ -782,116 +713,77 @@ async function loadCorrelation() {
             return;
         }
 
-        renderCorrelationChart(result, metric1, metric2);
-        hideMessage();
-    } catch (error) {
-        console.error('Error calculando correlación:', error);
-        showMessage('Error al calcular la correlación', true);
-    }
-}
+        const metric1Obj = availableMetrics.find(m => m.id === metric1);
+        const metric2Obj = availableMetrics.find(m => m.id === metric2);
 
-// Nueva función para correlación adicional (sección siempre visible)
-async function loadAdditionalCorrelation() {
-    const metric1 = document.getElementById('correlationMetric1Select').value;
-    const metric2 = document.getElementById('correlationMetric2Select').value;
-
-    if (!metric1 || !metric2) {
-        showMessage('Selecciona dos métricas diferentes', true);
-        return;
-    }
-
-    try {
-        let url = `/api/analysis/correlation?metric1=${metric1}&metric2=${metric2}`;
-        if (currentDays) {
-            url += `&days=${currentDays}`;
-        } else if (customStartDate && customEndDate) {
-            url += `&start_date=${customStartDate}&end_date=${customEndDate}`;
+        if (currentChart) {
+            currentChart.destroy();
         }
 
-        const response = await fetch(url);
-        const result = await response.json();
-
-        if (!result.scatter_data || result.scatter_data.length < 3) {
-            showMessage('No hay suficientes datos para calcular la correlación (mínimo 3 puntos)', false);
-            return;
-        }
-
-        renderCorrelationChart(result, metric1, metric2);
-        hideMessage();
-    } catch (error) {
-        console.error('Error calculando correlación:', error);
-        showMessage('Error al calcular la correlación', true);
-    }
-}
-
-// Renderizar gráfica de correlación
-function renderCorrelationChart(result, metric1Id, metric2Id) {
-    const metric1Obj = availableMetrics.find(m => m.id === metric1Id);
-    const metric2Obj = availableMetrics.find(m => m.id === metric2Id);
-
-    if (currentChart) {
-        currentChart.destroy();
-    }
-
-    const ctx = document.getElementById('mainChart').getContext('2d');
-    currentChart = new Chart(ctx, {
-        type: 'scatter',
-        data: {
-            datasets: [{
-                label: `${metric1Obj.name} vs ${metric2Obj.name}`,
-                data: result.scatter_data.map(d => ({ x: d.x, y: d.y })),
-                backgroundColor: '#C67B5C',
-                borderColor: '#C67B5C',
-                pointRadius: 6,
-                showLine: false,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: true,
-                    labels: {
-                        font: { family: "'Nunito', sans-serif", size: 12 },
-                        color: '#666',
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        currentChart = new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: `${metric1Obj.name} vs ${metric2Obj.name}`,
+                    data: result.scatter_data.map(d => ({ x: d.x, y: d.y })),
+                    backgroundColor: '#C67B5C',
+                    borderColor: '#C67B5C',
+                    pointRadius: 6,
+                    showLine: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            font: { family: "'Nunito', sans-serif", size: 12 },
+                            color: '#666',
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        title: {
+                            display: true,
+                            text: `${metric1Obj.name} (${metric1Obj.unit})`
+                        },
+                        ticks: { font: { family: "'Nunito', sans-serif" } }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: `${metric2Obj.name} (${metric2Obj.unit})`
+                        },
+                        ticks: { font: { family: "'Nunito', sans-serif" } }
                     }
                 }
-            },
-            scales: {
-                x: {
-                    type: 'linear',
-                    position: 'bottom',
-                    title: {
-                        display: true,
-                        text: `${metric1Obj.name} (${metric1Obj.unit})`
-                    },
-                    ticks: { font: { family: "'Nunito', sans-serif" } }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: `${metric2Obj.name} (${metric2Obj.unit})`
-                    },
-                    ticks: { font: { family: "'Nunito', sans-serif" } }
-                }
             }
-        }
-    });
+        });
 
-    // Mostrar info de correlación
-    const infoBox = document.getElementById('correlationInfo');
-    document.getElementById('correlationValue').textContent = 
-        (result.correlation !== null ? result.correlation.toFixed(3) : 'N/A');
-    
-    const interpretation = result.interpretation;
-    document.getElementById('correlationStrength').innerHTML = 
-        `<strong>${interpretation.strength} ${interpretation.direction}</strong> (r = ${result.correlation.toFixed(3)})`;
-    
-    document.getElementById('correlationExplanation').textContent = 
-        `${interpretation.explanation}\n\nPuntos de datos comunes: ${result.common_points}`;
+        // Mostrar info de correlación
+        const infoBox = document.getElementById('correlationInfo');
+        document.getElementById('correlationValue').textContent = 
+            (result.correlation !== null ? result.correlation.toFixed(3) : 'N/A');
+        
+        const interpretation = result.interpretation;
+        document.getElementById('correlationStrength').innerHTML = 
+            `<strong>${interpretation.strength} ${interpretation.direction}</strong> (r = ${result.correlation.toFixed(3)})`;
+        
+        document.getElementById('correlationExplanation').textContent = 
+            `${interpretation.explanation}\n\nPuntos de datos comunes: ${result.common_points}`;
 
-    infoBox.style.display = 'block';
+        infoBox.style.display = 'block';
+        hideMessage();
+    } catch (error) {
+        console.error('Error calculando correlación:', error);
+        showMessage('Error al calcular la correlación', true);
+    }
 }
 </script>
 {% endblock %}
