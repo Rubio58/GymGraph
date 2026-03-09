@@ -126,6 +126,82 @@
     font-weight: 600;
 }
 
+/* Botones de métrica */
+.metric-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+.metric-btn {
+    padding: 0.6rem 0.8rem;
+    border: 2px solid var(--border-light);
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: var(--transition);
+    text-align: center;
+    color: var(--text-primary);
+}
+
+.metric-btn:hover {
+    border-color: var(--terracotta);
+    background: rgba(198, 123, 92, 0.05);
+}
+
+.metric-btn.active {
+    background: var(--terracotta);
+    border-color: var(--terracotta);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(198, 123, 92, 0.35);
+}
+
+/* Período personalizado */
+.custom-period-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 0.8rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--border-light);
+}
+
+.date-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+}
+
+.date-input:focus {
+    outline: none;
+    border-color: var(--terracotta);
+    box-shadow: 0 0 0 2px rgba(198, 123, 92, 0.1);
+}
+
+/* Mensaje de error/info */
+.chart-message {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border: 1px solid #ffc107;
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-top: 1rem;
+    color: #856404;
+    text-align: center;
+    font-size: 0.95rem;
+    display: none;
+}
+
+.chart-message.error {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
 .dashboard-main {
     display: flex;
     flex-direction: column;
@@ -225,6 +301,12 @@
                 <button class="time-btn" data-days="30">30 días</button>
                 <button class="time-btn" data-days="90">90 días</button>
             </div>
+            <div class="custom-period-inputs">
+                <label style="font-size: 0.7rem; color: #666;">O personalizado:</label>
+                <input type="date" id="customStartDate" class="date-input" placeholder="Desde">
+                <input type="date" id="customEndDate" class="date-input" placeholder="Hasta">
+                <button class="time-btn" style="margin-top: 0.3rem;" id="applyCustomPeriod">Aplicar</button>
+            </div>
         </div>
 
         <!-- Selector de Modo -->
@@ -238,10 +320,10 @@
 
         <!-- Modo Single (Métrica Única) -->
         <div class="sidebar-section single-mode">
-            <h3>Visualizar</h3>
-            <select class="metric-select" id="singleMetricSelect">
-                <option value="">Cargando...</option>
-            </select>
+            <h3>Visualizar (puedes elegir varias)</h3>
+            <div class="metric-buttons" id="metricButtonsContainer">
+                <!-- Se cargan dinámicamente -->
+            </div>
         </div>
 
         <!-- Modo Correlación -->
@@ -268,6 +350,7 @@
         <div class="chart-container">
             <canvas id="mainChart"></canvas>
         </div>
+        <div id="chartMessage" class="chart-message"></div>
         <div id="correlationInfo" class="correlation-info" style="display: none;">
             <div class="correlation-value" id="correlationValue">—</div>
             <div class="correlation-strength" id="correlationStrength"></div>
@@ -282,13 +365,22 @@
 let currentChart = null;
 let currentMode = 'single';
 let currentDays = 1;
+let customStartDate = null;
+let customEndDate = null;
 let availableMetrics = [];
+let selectedMetrics = ['calories']; // Múltiples selecciones
+
+// Colores para las líneas
+const metricColors = [
+    '#C67B5C', '#D4844C', '#E09A3C', '#D4C05C', '#A8C858',
+    '#6CB858', '#38B458', '#38C878', '#38C8B8', '#38B8D8'
+];
 
 // Inicializar
 document.addEventListener('DOMContentLoaded', async () => {
     await loadMetrics();
     setupEventListeners();
-    loadChart('calories');
+    loadChart();
 });
 
 // Cargar lista de métricas disponibles
@@ -297,24 +389,59 @@ async function loadMetrics() {
         const response = await fetch('/api/analysis/metrics');
         availableMetrics = await response.json();
 
-        const singleSelect = document.getElementById('singleMetricSelect');
         const metric1Select = document.getElementById('metric1Select');
         const metric2Select = document.getElementById('metric2Select');
-
         const html = availableMetrics
             .map(m => `<option value="${m.id}">${m.name} (${m.unit})</option>`)
             .join('');
 
-        singleSelect.innerHTML = html;
         metric1Select.innerHTML = html;
         metric2Select.innerHTML = html;
-
-        singleSelect.value = 'calories';
         metric1Select.value = 'calories';
         metric2Select.value = 'volume';
+
+        // Renderizar botones de métricas
+        renderMetricButtons();
     } catch (error) {
         console.error('Error cargando métricas:', error);
+        showMessage('Error al cargar las métricas', true);
     }
+}
+
+// Renderizar botones de métrica
+function renderMetricButtons() {
+    const container = document.getElementById('metricButtonsContainer');
+    container.innerHTML = availableMetrics
+        .map(m => `
+            <button class="metric-btn ${selectedMetrics.includes(m.id) ? 'active' : ''}" 
+                    data-metric="${m.id}"
+                    title="${m.name} (${m.unit})">
+                ${m.name.substring(0, 10)}
+            </button>
+        `)
+        .join('');
+
+    // Agregar listeners
+    container.querySelectorAll('.metric-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const metricId = btn.dataset.metric;
+            const index = selectedMetrics.indexOf(metricId);
+            
+            if (index > -1) {
+                selectedMetrics.splice(index, 1);
+            } else {
+                selectedMetrics.push(metricId);
+            }
+
+            if (selectedMetrics.length === 0) {
+                selectedMetrics.push(metricId);
+            }
+
+            renderMetricButtons();
+            loadChart();
+        });
+    });
 }
 
 // Setup de event listeners
@@ -322,12 +449,35 @@ function setupEventListeners() {
     // Botones de tiempo
     document.querySelectorAll('.time-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+            if (e.target.id === 'applyCustomPeriod') {
+                const start = document.getElementById('customStartDate').value;
+                const end = document.getElementById('customEndDate').value;
+                if (!start || !end) {
+                    showMessage('Por favor completa ambas fechas', true);
+                    return;
+                }
+                customStartDate = start;
+                customEndDate = end;
+                currentDays = null;
+                document.querySelectorAll('.time-btn:not(#applyCustomPeriod)').forEach(b => 
+                    b.classList.remove('active'));
+                if (currentMode === 'single') {
+                    loadChart();
+                } else {
+                    loadCorrelation();
+                }
+                return;
+            }
+
+            document.querySelectorAll('.time-btn:not(#applyCustomPeriod)').forEach(b => 
+                b.classList.remove('active'));
             e.target.classList.add('active');
             currentDays = parseInt(e.target.dataset.days);
+            customStartDate = null;
+            customEndDate = null;
             
             if (currentMode === 'single') {
-                loadChart(document.getElementById('singleMetricSelect').value);
+                loadChart();
             } else {
                 loadCorrelation();
             }
@@ -346,30 +496,89 @@ function setupEventListeners() {
             document.querySelector('.correlation-mode').style.display = 
                 currentMode === 'correlation' ? 'block' : 'none';
 
+            hideMessage();
+
             if (currentMode === 'single') {
-                loadChart(document.getElementById('singleMetricSelect').value);
+                loadChart();
             } else {
                 loadCorrelation();
             }
         });
     });
 
-    // Select de métrica única
-    document.getElementById('singleMetricSelect').addEventListener('change', (e) => {
-        loadChart(e.target.value);
-    });
-
     // Botón de calcular correlación
     document.querySelector('.calc-correlation-btn').addEventListener('click', loadCorrelation);
 }
 
-// Cargar gráfica de métrica única
-async function loadChart(metricId) {
-    try {
-        const response = await fetch(`/api/analysis/metric-data?metric=${metricId}&days=${currentDays}`);
-        const data = await response.json();
+// Mostrar mensaje
+function showMessage(text, isError = false) {
+    const msg = document.getElementById('chartMessage');
+    msg.textContent = text;
+    msg.className = 'chart-message' + (isError ? ' error' : '');
+    msg.style.display = 'block';
+}
 
-        const metric = availableMetrics.find(m => m.id === metricId);
+function hideMessage() {
+    document.getElementById('chartMessage').style.display = 'none';
+}
+
+// Cargar gráfica de métrica única (ahora con múltiples líneas)
+async function loadChart() {
+    try {
+        hideMessage();
+
+        if (selectedMetrics.length === 0) {
+            showMessage('Por favor selecciona al menos una métrica', true);
+            return;
+        }
+
+        // Construir parámetros
+        let url = '/api/analysis/metric-data?metric=' + selectedMetrics[0];
+        if (currentDays) {
+            url += `&days=${currentDays}`;
+        } else if (customStartDate && customEndDate) {
+            url += `&start_date=${customStartDate}&end_date=${customEndDate}`;
+        }
+
+        const response = await fetch(url);
+        const baseData = await response.json();
+
+        // Si hay solo 1 métrica, única consulta
+        if (selectedMetrics.length === 1) {
+            renderSingleChart(baseData, selectedMetrics[0]);
+            return;
+        }
+
+        // Si hay múltiples, hace falta obtener datos para cada una
+        const allDatasets = [];
+        const labels = baseData.labels;
+
+        for (let i = 0; i < selectedMetrics.length; i++) {
+            const metricId = selectedMetrics[i];
+            let dataUrl = '/api/analysis/metric-data?metric=' + metricId;
+            if (currentDays) {
+                dataUrl += `&days=${currentDays}`;
+            } else if (customStartDate && customEndDate) {
+                dataUrl += `&start_date=${customStartDate}&end_date=${customEndDate}`;
+            }
+
+            const metricData = await fetch(dataUrl).then(r => r.json());
+            const metric = availableMetrics.find(m => m.id === metricId);
+
+            allDatasets.push({
+                label: metric.name + ' (' + metric.unit + ')',
+                data: metricData.data,
+                borderColor: metricColors[i % metricColors.length],
+                backgroundColor: metricColors[i % metricColors.length] + '15',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.4,
+                pointRadius: 3,
+                pointBackgroundColor: metricColors[i % metricColors.length],
+                pointBorderColor: '#fff',
+                pointBorderWidth: 1,
+            });
+        }
 
         if (currentChart) {
             currentChart.destroy();
@@ -379,20 +588,8 @@ async function loadChart(metricId) {
         currentChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: data.labels,
-                datasets: [{
-                    label: metric.name,
-                    data: data.data,
-                    borderColor: '#C67B5C',
-                    backgroundColor: 'rgba(198, 123, 92, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#C67B5C',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                }]
+                labels: labels,
+                datasets: allDatasets
             },
             options: {
                 responsive: true,
@@ -422,7 +619,63 @@ async function loadChart(metricId) {
         document.getElementById('correlationInfo').style.display = 'none';
     } catch (error) {
         console.error('Error cargando gráfica:', error);
+        showMessage('Error al cargar la gráfica', true);
     }
+}
+
+// Renderizar gráfica de métrica única
+function renderSingleChart(data, metricId) {
+    const metric = availableMetrics.find(m => m.id === metricId);
+
+    if (currentChart) {
+        currentChart.destroy();
+    }
+
+    const ctx = document.getElementById('mainChart').getContext('2d');
+    currentChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: metric.name + ' (' + metric.unit + ')',
+                data: data.data,
+                borderColor: '#C67B5C',
+                backgroundColor: 'rgba(198, 123, 92, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#C67B5C',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        font: { family: "'Nunito', sans-serif", size: 12 },
+                        color: '#666',
+                        padding: 15,
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { font: { family: "'Nunito', sans-serif" } }
+                },
+                x: {
+                    ticks: { font: { family: "'Nunito', sans-serif" } }
+                }
+            }
+        }
+    });
+
+    document.getElementById('correlationInfo').style.display = 'none';
 }
 
 // Cargar análisis de correlación
@@ -431,16 +684,23 @@ async function loadCorrelation() {
     const metric2 = document.getElementById('metric2Select').value;
 
     if (!metric1 || !metric2) {
-        alert('Selecciona dos métricas diferentes');
+        showMessage('Selecciona dos métricas diferentes', true);
         return;
     }
 
     try {
-        const response = await fetch(`/api/analysis/correlation?metric1=${metric1}&metric2=${metric2}&days=${currentDays}`);
+        let url = `/api/analysis/correlation?metric1=${metric1}&metric2=${metric2}`;
+        if (currentDays) {
+            url += `&days=${currentDays}`;
+        } else if (customStartDate && customEndDate) {
+            url += `&start_date=${customStartDate}&end_date=${customEndDate}`;
+        }
+
+        const response = await fetch(url);
         const result = await response.json();
 
         if (!result.scatter_data || result.scatter_data.length < 3) {
-            alert('No hay suficientes datos para calcular correlación');
+            showMessage('No hay suficientes datos para calcular la correlación (mínimo 3 puntos)', false);
             return;
         }
 
@@ -510,9 +770,10 @@ async function loadCorrelation() {
             `${interpretation.explanation}\n\nPuntos de datos comunes: ${result.common_points}`;
 
         infoBox.style.display = 'block';
+        hideMessage();
     } catch (error) {
         console.error('Error calculando correlación:', error);
-        alert('Error al calcular correlación');
+        showMessage('Error al calcular la correlación', true);
     }
 }
 </script>
