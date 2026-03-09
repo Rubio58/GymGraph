@@ -3,7 +3,7 @@ Servicio de análisis avanzado: correlaciones, covarianzas y estadísticas
 """
 
 from database import SessionLocal
-from models import User, Food, Meal, MealFood, Exercise, Trainplan, Trainday, TraindayExercise, Set
+from models import User, Food, Meal, MealFood, Exercise, Trainplan, Trainday, TraindayExercise, Set, Meas, MeasCat
 from datetime import date, datetime, timedelta
 from sqlalchemy import func, text
 import math
@@ -16,13 +16,18 @@ class AnalysisService:
     def __init__(self):
         self.session = SessionLocal()
 
-    def get_metric_data(self, user_id, metric_type, days=30):
+    def get_metric_data(self, user_id, metric_type, days=30, start_date=None, end_date=None, all_time=False):
         """
         Obtiene datos de una métrica a través del tiempo
-        Tipos: calories, protein, carbs, fats, weight_per_exercise, volume, sets
+        Tipos: calories, protein, carbs, fats, weight_avg, volume, sets, reps_avg,
+               meals_count, workouts_count, meas_<id>
         """
-        end_date = date.today()
-        start_date = end_date - timedelta(days=days)
+        if end_date is None:
+            end_date = date.today()
+        if all_time:
+            start_date = self._get_first_data_date(user_id)
+        elif start_date is None:
+            start_date = end_date - timedelta(days=days)
 
         if metric_type == 'calories':
             return self._get_calories_data(user_id, start_date, end_date)
@@ -44,6 +49,9 @@ class AnalysisService:
             return self._get_meals_count_data(user_id, start_date, end_date)
         elif metric_type == 'workouts_count':
             return self._get_workouts_count_data(user_id, start_date, end_date)
+        elif metric_type.startswith('meas_'):
+            cat_id = int(metric_type.split('_', 1)[1])
+            return self._get_meas_data(user_id, cat_id, start_date, end_date)
         else:
             return {'labels': [], 'data': []}
 
@@ -245,10 +253,46 @@ class AnalysisService:
             'data': [int(r.workout_count or 0) for r in result]
         }
 
-    def calculate_correlation(self, user_id, metric1, metric2, days=30):
+    def _get_first_data_date(self, user_id):
+        """Retorna la fecha del primer dato registrado por el usuario en cualquier tabla"""
+        candidates = []
+        meal_min = self.session.query(func.min(Meal.date)).filter(Meal.User_idUser == user_id).scalar()
+        if meal_min:
+            candidates.append(date.fromisoformat(str(meal_min)[:10]))
+        set_min = self.session.query(func.min(func.date(Set.date))).join(
+            TraindayExercise, Set.Trainday_exercise_idTrainday_exercise == TraindayExercise.idTrainday_exercise
+        ).join(
+            Trainday, TraindayExercise.Trainday_idTrainday == Trainday.idTrainday
+        ).join(
+            Trainplan, Trainday.Trainplan_idTrainplan == Trainplan.idTrainplan
+        ).filter(Trainplan.User_idUser == user_id).scalar()
+        if set_min:
+            candidates.append(set_min if isinstance(set_min, date) else date.fromisoformat(str(set_min)[:10]))
+        meas_min = self.session.query(func.min(Meas.date)).filter(Meas.User_idUser == user_id).scalar()
+        if meas_min:
+            candidates.append(date.fromisoformat(str(meas_min)[:10]))
+        return min(candidates) if candidates else date.today() - timedelta(days=30)
+
+    def _get_meas_data(self, user_id, meas_cat_id, start_date, end_date):
+        """Medidas corporales de una categoría concreta"""
+        result = self.session.query(
+            Meas.date.label('date'),
+            Meas.val.label('val')
+        ).filter(
+            Meas.User_idUser == user_id,
+            Meas.MeasCat_idMeasCat == meas_cat_id,
+            Meas.date >= str(start_date),
+            Meas.date <= str(end_date)
+        ).order_by(Meas.date).all()
+        return {
+            'labels': [str(r.date) for r in result],
+            'data': [float(r.val or 0) for r in result]
+        }
+
+    def calculate_correlation(self, user_id, metric1, metric2, days=30, start_date=None, end_date=None, all_time=False):
         """Calcula la correlación de Pearson entre dos métricas"""
-        data1 = self.get_metric_data(user_id, metric1, days)
-        data2 = self.get_metric_data(user_id, metric2, days)
+        data1 = self.get_metric_data(user_id, metric1, days, start_date=start_date, end_date=end_date, all_time=all_time)
+        data2 = self.get_metric_data(user_id, metric2, days, start_date=start_date, end_date=end_date, all_time=all_time)
 
         # Encontrar fechas comunes
         dates1 = set(data1['labels'])
@@ -339,20 +383,32 @@ class AnalysisService:
             'r_value': r
         }
 
-    def get_available_metrics(self):
-        """Retorna la lista de métricas disponibles"""
-        return [
+    def get_available_metrics(self, user_id=None):
+        """Retorna la lista de métricas disponibles. Si se pasa user_id incluye medidas corporales del usuario."""
+        metrics = [
             {'id': 'calories', 'name': 'Calorías', 'category': 'Nutrición', 'unit': 'kcal'},
             {'id': 'protein', 'name': 'Proteína', 'category': 'Nutrición', 'unit': 'g'},
             {'id': 'carbs', 'name': 'Carbohidratos', 'category': 'Nutrición', 'unit': 'g'},
             {'id': 'fats', 'name': 'Grasas', 'category': 'Nutrición', 'unit': 'g'},
             {'id': 'weight_avg', 'name': 'Peso promedio levantado', 'category': 'Entrenamiento', 'unit': 'kg'},
             {'id': 'volume', 'name': 'Volumen total', 'category': 'Entrenamiento', 'unit': 'kg'},
-            {'id': 'sets', 'name': 'Series totales', 'category': 'Entrenamiento', 'unit': 'series'},
-            {'id': 'reps_avg', 'name': 'Reps promedio', 'category': 'Entrenamiento', 'unit': 'reps'},
-            {'id': 'meals_count', 'name': 'Nº de comidas', 'category': 'Nutrición', 'unit': 'comidas'},
-            {'id': 'workouts_count', 'name': 'Nº de entrenamientos', 'category': 'Entrenamiento', 'unit': 'entrenamientos'},
+            {'id': 'sets', 'name': 'Series totales', 'category': 'Entrenamiento', 'unit': ''},
+            {'id': 'reps_avg', 'name': 'Repeticiones promedio', 'category': 'Entrenamiento', 'unit': ''},
+            {'id': 'meals_count', 'name': 'Nº de comidas', 'category': 'Nutrición', 'unit': ''},
+            {'id': 'workouts_count', 'name': 'Nº de entrenamientos', 'category': 'Entrenamiento', 'unit': ''},
         ]
+        if user_id:
+            cats = self.session.query(MeasCat).join(
+                Meas, MeasCat.idMeasCat == Meas.MeasCat_idMeasCat
+            ).filter(Meas.User_idUser == user_id).distinct().order_by(MeasCat.name).all()
+            for cat in cats:
+                metrics.append({
+                    'id': f'meas_{cat.idMeasCat}',
+                    'name': cat.name,
+                    'category': 'Medidas',
+                    'unit': cat.unit
+                })
+        return metrics
 
     def close(self):
         """Cierra la sesión"""

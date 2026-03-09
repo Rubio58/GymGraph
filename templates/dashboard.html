@@ -4,319 +4,423 @@
 
 {% block extra_css %}
 <style>
+/* ── Override base container ───────────────────────────────── */
+main.container {
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+}
+.footer { display: none; }
+
+/* ── Layout ─────────────────────────────────────────────────── */
 .dashboard-layout {
     display: grid;
-    grid-template-columns: 280px 1fr 220px;
-    gap: 1.5rem;
-    height: calc(100vh - 120px);
+    grid-template-columns: 300px 1fr 260px;
+    height: calc(100vh - 66px);
+    overflow: hidden;
+}
+
+/* ── Columns dark background ────────────────────────────────── */
+.dashboard-sidebar,
+.dashboard-period {
+    background: #1e1812;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(198,123,92,0.35) transparent;
+}
+.dashboard-sidebar::-webkit-scrollbar,
+.dashboard-period::-webkit-scrollbar { width: 3px; }
+.dashboard-sidebar::-webkit-scrollbar-thumb,
+.dashboard-period::-webkit-scrollbar-thumb {
+    background: rgba(198,123,92,0.35);
+    border-radius: 3px;
 }
 
 .dashboard-sidebar {
+    grid-column: 1;
+    grid-row: 1;
+    padding: 1.5rem 1.25rem;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    max-height: calc(100vh - 140px);
-    overflow-y: auto;
-    grid-column: 1;
+    gap: 1.5rem;
+    border-right: 1px solid rgba(255,255,255,0.07);
 }
 
 .dashboard-period {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    max-height: calc(100vh - 140px);
-    overflow-y: auto;
     grid-column: 3;
-}
-
-.dashboard-main {
+    grid-row: 1;
+    padding: 1.5rem 1.25rem;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    grid-column: 2;
+    gap: 0.75rem;
+    border-left: 1px solid rgba(255,255,255,0.07);
 }
 
+/* ── Chart area ──────────────────────────────────────────────── */
+.dashboard-main {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    background: #f9f6f2;
+    padding: 2rem 2.5rem;
+    overflow: hidden;
+    position: relative;
+}
+
+/* ── Panel section titles ────────────────────────────────────── */
 .sidebar-section {
-    background: #fff;
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius);
-    padding: 1.25rem;
-    box-shadow: var(--shadow-sm);
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
 }
 
 .sidebar-section h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.4);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.12em;
     margin-bottom: 1rem;
     padding-bottom: 0.6rem;
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
 }
 
-.time-range-group {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-}
-
-.time-btn {
-    padding: 0.65rem 0.8rem;
-    border: 1px solid var(--border-light);
-    border-radius: 4px;
-    background: transparent;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: var(--transition);
-}
-
-.time-btn:hover {
-    background: var(--cream-dark);
-    border-color: var(--sand);
-}
-
-.time-btn.active {
-    background: var(--terracotta);
-    border-color: var(--terracotta);
-    color: #fff;
-    box-shadow: 0 2px 8px rgba(198, 123, 92, 0.35);
-}
-
-.mode-toggle {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.3rem;
-    border: 1px solid var(--border-light);
-    border-radius: 6px;
-    padding: 2px;
-    background: var(--cream);
-}
-
-.mode-toggle button {
-    padding: 0.4rem;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-    transition: var(--transition);
-    border-radius: 4px;
-}
-
-.mode-toggle button.active {
-    background: #fff;
-    color: var(--terracotta);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.metric-select {
-    width: 100%;
-    padding: 0.6rem;
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius);
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.85rem;
-    color: var(--text-primary);
-}
-
-.metric-select:focus {
-    outline: none;
-    border-color: var(--terracotta);
-    box-shadow: 0 0 0 2px rgba(198, 123, 92, 0.1);
-}
-
-.metric-pair {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-}
-
-.metric-pair label {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 600;
-}
-
-/* Botones de métrica - una columna */
+/* ── Metric toggle buttons ───────────────────────────────────── */
 .metric-buttons {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.45rem;
 }
 
 .metric-btn {
-    padding: 0.75rem 1rem;
-    border: 2px solid var(--border-light);
-    border-radius: 6px;
-    background: #fff;
+    padding: 0.65rem 1rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 500;
-    transition: var(--transition);
+    font-family: 'Nunito', sans-serif;
     text-align: left;
-    color: var(--text-primary);
+    color: rgba(255,255,255,0.7);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    min-height: 40px;
     display: flex;
     align-items: center;
+    transition: all 0.15s ease;
 }
 
 .metric-btn:hover {
-    border-color: var(--terracotta);
-    background: rgba(198, 123, 92, 0.05);
+    border-color: rgba(198,123,92,0.45);
+    background: rgba(198,123,92,0.1);
+    color: rgba(255,255,255,0.9);
 }
 
 .metric-btn.active {
     background: var(--terracotta);
-    border-color: var(--terracotta);
+    border-color: transparent;
     color: #fff;
-    box-shadow: 0 2px 8px rgba(198, 123, 92, 0.35);
+    box-shadow: 0 2px 8px rgba(198,123,92,0.45);
 }
 
-/* Período personalizado */
-.custom-period-inputs {
+.sidebar-hint {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.3);
+    text-align: center;
+    margin-top: 0.6rem;
+    font-family: 'Nunito', sans-serif;
+}
+
+/* ── Correlación selects ─────────────────────────────────────── */
+.metric-pair {
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
-    margin-top: 0.8rem;
-    padding-top: 0.8rem;
-    border-top: 1px solid var(--border-light);
+    gap: 0.35rem;
 }
 
-.date-input {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid var(--border-light);
-    border-radius: 4px;
+.metric-pair + .metric-pair {
+    margin-top: 0.75rem;
+}
+
+.metric-pair label {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.45);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
     font-family: 'Nunito', sans-serif;
-    font-size: 0.85rem;
 }
 
-.date-input:focus {
+.metric-select {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.07);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.9);
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+}
+.metric-select option { background: #1e1812; color: #fff; }
+.metric-select:focus {
     outline: none;
     border-color: var(--terracotta);
-    box-shadow: 0 0 0 2px rgba(198, 123, 92, 0.1);
-}
-
-/* Mensaje de error/info */
-.chart-message {
-    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-    border: 1px solid #ffc107;
-    border-radius: var(--radius);
-    padding: 1rem;
-    margin-top: 1rem;
-    color: #856404;
-    text-align: center;
-    font-size: 0.95rem;
-    display: none;
-}
-
-.chart-message.error {
-    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-    border-color: #f5c6cb;
-    color: #721c24;
-}
-
-.dashboard-main {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    flex: 1;
-}
-
-.chart-container {
-    background: #fff;
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    box-shadow: var(--shadow-sm);
-    flex: 1;
-    min-height: 400px;
-    display: flex;
-    flex-direction: column;
-}
-
-#mainChart {
-    flex: 1;
-    min-height: 0;
-}
-
-.correlation-info {
-    background: linear-gradient(135deg, var(--cream) 0%, var(--cream-dark) 100%);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    margin-top: 1rem;
-}
-
-.correlation-value {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--terracotta);
-    font-family: 'Playfair Display', serif;
-}
-
-.correlation-strength {
-    font-size: 0.95rem;
-    color: var(--text-secondary);
-    margin-top: 0.5rem;
-}
-
-.correlation-explanation {
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    margin-top: 1rem;
-    line-height: 1.5;
-    font-style: italic;
+    box-shadow: 0 0 0 2px rgba(198,123,92,0.2);
 }
 
 .calc-correlation-btn {
     width: 100%;
     margin-top: 1rem;
-    padding: 0.7rem;
+    padding: 0.75rem;
     background: var(--terracotta);
     color: #fff;
     border: none;
-    border-radius: var(--radius);
+    border-radius: 8px;
     cursor: pointer;
-    font-weight: 600;
-    transition: var(--transition);
+    font-weight: 700;
+    font-size: 0.88rem;
+    font-family: 'Nunito', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    transition: all 0.15s ease;
 }
-
 .calc-correlation-btn:hover {
-    background: #a85c48;
-    box-shadow: 0 2px 8px rgba(198, 123, 92, 0.3);
+    background: #b56749;
+    box-shadow: 0 4px 14px rgba(198,123,92,0.45);
 }
 
+/* ── Period buttons ──────────────────────────────────────────── */
+.time-range-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+}
+
+.time-btn {
+    padding: 0.65rem 0.5rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 600;
+    font-family: 'Nunito', sans-serif;
+    color: rgba(255,255,255,0.65);
+    transition: all 0.15s ease;
+}
+.time-btn:hover {
+    background: rgba(255,255,255,0.09);
+    color: rgba(255,255,255,0.9);
+}
+.time-btn.active {
+    background: var(--terracotta);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(198,123,92,0.4);
+}
+
+/* ── Custom date range ───────────────────────────────────────── */
+.custom-period-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255,255,255,0.07);
+}
+.custom-period-inputs label {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: 'Nunito', sans-serif;
+}
+.date-input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.07);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.88rem;
+    color: rgba(255,255,255,0.9);
+    color-scheme: dark;
+}
+.date-input:focus {
+    outline: none;
+    border-color: var(--terracotta);
+    box-shadow: 0 0 0 2px rgba(198,123,92,0.2);
+}
+
+/* ── Chart – header bar ──────────────────────────────────────── */
+.chart-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f0ece6;
+    flex-shrink: 0;
+}
+.chart-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+.chart-subtitle {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+    font-family: 'Nunito', sans-serif;
+}
+.chart-badge-group {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 55%;
+}
+.chart-badge {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.25rem 0.6rem;
+    border-radius: 20px;
+    color: #fff;
+    white-space: nowrap;
+}
+
+/* ── Chart canvas wrapper ────────────────────────────────────── */
+.chart-container {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+    padding: 1.25rem 1.5rem 1rem;
+}
+
+#mainChart {
+    flex: 1;
+    min-height: 0;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* ── Correlation result card ─────────────────────────────────── */
+.correlation-info {
+    background: var(--cream);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-top: 1rem;
+    display: none;
+    flex-shrink: 0;
+}
+.correlation-value {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--terracotta);
+    font-family: 'Playfair Display', serif;
+}
+.correlation-strength {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+.correlation-explanation {
+    font-size: 0.84rem;
+    color: var(--text-primary);
+    margin-top: 0.75rem;
+    line-height: 1.55;
+    font-style: italic;
+}
+
+/* ── Messages ────────────────────────────────────────────────── */
+.chart-message {
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    color: #7a5c00;
+    text-align: center;
+    font-size: 0.82rem;
+    display: none;
+    margin-top: 0.75rem;
+    flex-shrink: 0;
+}
+.chart-message.error {
+    background: #fef0f0;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+/* ── Smoothing toggle ────────────────────────────────────────── */
+.smooth-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    cursor: pointer;
+    user-select: none;
+}
+.smooth-toggle input[type=checkbox] { display: none; }
+.smooth-track {
+    width: 32px;
+    height: 18px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 9px;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+.smooth-track::after {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+}
+.smooth-toggle input:checked + .smooth-track {
+    background: var(--terracotta);
+}
+.smooth-toggle input:checked + .smooth-track::after {
+    transform: translateX(14px);
+}
+.smooth-label {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.55);
+}
 @media (max-width: 1024px) {
     .dashboard-layout {
         grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+        height: auto;
+        overflow: visible;
     }
-    .dashboard-sidebar {
-        display: block;
-        max-height: none;
-    }
-    .dashboard-period {
-        display: block;
-        max-height: none;
-    }
-    .dashboard-main {
-        grid-column: auto;
-    }
+    .dashboard-sidebar { grid-column: 1; grid-row: 1; }
+    .dashboard-main    { grid-column: 1; grid-row: 2; min-height: 60vh; }
+    .dashboard-period  { grid-column: 1; grid-row: 3; border-left: none; border-top: 1px solid rgba(255,255,255,0.07); }
 }
-
 @media (max-width: 600px) {
-    .time-range-group {
-        grid-template-columns: 1fr;
-    }
+    .time-range-group { grid-template-columns: 1fr 1fr; }
 }
 </style>
 {% endblock %}
@@ -331,9 +435,7 @@
             <div class="metric-buttons" id="metricButtonsContainer">
                 <!-- Se cargan dinámicamente -->
             </div>
-            <small style="display: block; margin-top: 0.8rem; color: #999; text-align: center; font-size: 0.75rem;">
-                Haz click para añadir/quitar
-            </small>
+            <small class="sidebar-hint">Click para añadir / quitar</small>
         </div>
 
         <!-- Sección Correlación (SIEMPRE VISIBLE, no es tab) -->
@@ -357,6 +459,13 @@
 
     <!-- AREA CENTRAL (GRÁFICA) -->
     <main class="dashboard-main">
+        <div class="chart-header">
+            <div>
+                <div class="chart-title">Análisis de métricas</div>
+                <div class="chart-subtitle">Selecciona métricas y período</div>
+            </div>
+            <div class="chart-badge-group" id="activeBadges"></div>
+        </div>
         <div class="chart-container">
             <canvas id="mainChart"></canvas>
         </div>
@@ -373,16 +482,24 @@
         <div class="sidebar-section">
             <h3>Período</h3>
             <div class="time-range-group">
-                <button class="time-btn active" data-days="1">Hoy</button>
+                <button class="time-btn" data-days="1">Hoy</button>
                 <button class="time-btn" data-days="7">7 días</button>
                 <button class="time-btn" data-days="30">30 días</button>
                 <button class="time-btn" data-days="90">90 días</button>
+                <button class="time-btn active" data-days="all" style="grid-column: 1 / -1;">Todo el tiempo</button>
             </div>
             <div class="custom-period-inputs">
                 <label style="font-size: 0.7rem; color: #666;">Personalizado:</label>
                 <input type="date" id="customStartDate" class="date-input" placeholder="Desde">
                 <input type="date" id="customEndDate" class="date-input" placeholder="Hasta">
                 <button class="time-btn" style="margin-top: 0.3rem;" id="applyCustomPeriod">Aplicar</button>
+            </div>
+            <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.07);">
+                <label class="smooth-toggle" title="Media móvil de 7 días">
+                    <input type="checkbox" id="smoothingToggle">
+                    <span class="smooth-track"></span>
+                    <span class="smooth-label">Suavizar (7 días)</span>
+                </label>
             </div>
         </div>
     </aside>
@@ -392,22 +509,107 @@
 <script>
 // Estado global
 let currentChart = null;
-let currentDays = 1;
+let currentDays = null;
+let allTime = true;
 let customStartDate = null;
 let customEndDate = null;
 let availableMetrics = [];
 let selectedMetrics = ['calories']; // Múltiples selecciones
+let smoothing = false;
 
 // Colores para las líneas
 const metricColors = [
-    '#C67B5C', '#D4844C', '#E09A3C', '#D4C05C', '#A8C858',
-    '#6CB858', '#38B458', '#38C878', '#38C8B8', '#38B8D8'
+    '#C67B5C', '#5B8DB8', '#6EAA6E', '#B87B5B', '#8B6BAE',
+    '#D4864C', '#4DADA8', '#C86B7C', '#7DAD5C', '#AA6080'
 ];
+
+// Función media móvil (ventana de 7 puntos)
+function movingAverage(data, window = 7) {
+    return data.map((_, i) => {
+        const slice = data.slice(Math.max(0, i - window + 1), i + 1);
+        return slice.reduce((a, b) => a + b, 0) / slice.length;
+    });
+}
+
+// Helper: construye el fragmento de período para las URLs
+function periodParams() {
+    if (allTime) return '&all_time=true';
+    if (currentDays) return `&days=${currentDays}`;
+    if (customStartDate && customEndDate) return `&start_date=${customStartDate}&end_date=${customEndDate}`;
+    return '&all_time=true';
+}
+
+// Opciones base compartidas de Chart.js
+function baseChartOptions(extraScales = {}) {
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 500, easing: 'easeOutQuart' },
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+                align: 'start',
+                labels: {
+                    font: { family: "'Nunito', sans-serif", size: 11, weight: '600' },
+                    color: '#888',
+                    padding: 16,
+                    usePointStyle: true,
+                    pointStyleWidth: 8,
+                }
+            },
+            tooltip: {
+                backgroundColor: '#1e1812',
+                titleFont: { family: "'Nunito', sans-serif", size: 12, weight: '700' },
+                bodyFont: { family: "'Nunito', sans-serif", size: 11 },
+                padding: 10,
+                cornerRadius: 8,
+                caretSize: 5,
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: false,
+                grid: { color: '#f5f0ea', drawBorder: false },
+                ticks: {
+                    font: { family: "'Nunito', sans-serif", size: 11 },
+                    color: '#aaa',
+                    padding: 8,
+                },
+                border: { display: false },
+                ...extraScales.y
+            },
+            x: {
+                grid: { display: false },
+                ticks: {
+                    font: { family: "'Nunito', sans-serif", size: 11 },
+                    color: '#aaa',
+                    maxRotation: 0,
+                    padding: 6,
+                },
+                border: { display: false },
+                ...extraScales.x
+            }
+        }
+    };
+}
+
+// Actualizar badges en el header
+function updateBadges() {
+    const container = document.getElementById('activeBadges');
+    if (!container) return;
+    container.innerHTML = selectedMetrics.map((id, i) => {
+        const m = availableMetrics.find(m => m.id === id);
+        if (!m) return '';
+        return `<span class="chart-badge" style="background:${metricColors[i % metricColors.length]}">${m.name}</span>`;
+    }).join('');
+}
 
 // Inicializar
 document.addEventListener('DOMContentLoaded', async () => {
     await loadMetrics();
     setupEventListeners();
+    updateBadges();
     loadChart();
 });
 
@@ -421,7 +623,7 @@ async function loadMetrics() {
         const metric2Select = document.getElementById('metric2Select');
 
         const html = availableMetrics
-            .map(m => `<option value="${m.id}">${m.name} (${m.unit})</option>`)
+            .map(m => `<option value="${m.id}">${m.unit ? m.name + ' (' + m.unit + ')' : m.name}</option>`)
             .join('');
 
         metric1Select.innerHTML = html;
@@ -444,8 +646,8 @@ function renderMetricButtons() {
         .map(m => `
             <button class="metric-btn ${selectedMetrics.includes(m.id) ? 'active' : ''}" 
                     data-metric="${m.id}"
-                    title="${m.name} (${m.unit})">
-                ${m.name} (${m.unit})
+                    title="${m.name}${m.unit ? ' (' + m.unit + ')' : ''}">
+                ${m.unit ? m.name + ' (' + m.unit + ')' : m.name}
             </button>
         `)
         .join('');
@@ -465,6 +667,7 @@ function renderMetricButtons() {
 
             // SIN obligación de tener algo seleccionado
             renderMetricButtons();
+            updateBadges();
             loadChart(); // Si no hay nada seleccionado, muestra gráfico vacío
         });
     });
@@ -485,6 +688,7 @@ function setupEventListeners() {
                 customStartDate = start;
                 customEndDate = end;
                 currentDays = null;
+                allTime = false;
                 document.querySelectorAll('.dashboard-period .time-btn:not(#applyCustomPeriod)').forEach(b => 
                     b.classList.remove('active'));
                 loadChart();
@@ -494,11 +698,24 @@ function setupEventListeners() {
             document.querySelectorAll('.dashboard-period .time-btn:not(#applyCustomPeriod)').forEach(b => 
                 b.classList.remove('active'));
             e.target.classList.add('active');
-            currentDays = parseInt(e.target.dataset.days);
+            const daysAttr = e.target.dataset.days;
+            if (daysAttr === 'all') {
+                allTime = true;
+                currentDays = null;
+            } else {
+                allTime = false;
+                currentDays = parseInt(daysAttr);
+            }
             customStartDate = null;
             customEndDate = null;
             loadChart();
         });
+    });
+
+    // Toggle suavizado
+    document.getElementById('smoothingToggle').addEventListener('change', (e) => {
+        smoothing = e.target.checked;
+        loadChart();
     });
 
     // Botón de calcular correlación
@@ -529,30 +746,22 @@ async function loadChart() {
             }
             const ctx = document.getElementById('mainChart').getContext('2d');
             currentChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: []
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    }
-                }
-            });
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: []
+            },
+            options: {
+                ...baseChartOptions(),
+                plugins: { ...baseChartOptions().plugins, legend: { display: false } }
+            }
+        });
             document.getElementById('correlationInfo').style.display = 'none';
             return;
         }
 
         // Construir parámetros
-        let url = '/api/analysis/metric-data?metric=' + selectedMetrics[0];
-        if (currentDays) {
-            url += `&days=${currentDays}`;
-        } else if (customStartDate && customEndDate) {
-            url += `&start_date=${customStartDate}&end_date=${customEndDate}`;
-        }
+        let url = '/api/analysis/metric-data?metric=' + selectedMetrics[0] + periodParams();
 
         const response = await fetch(url);
         const baseData = await response.json();
@@ -569,65 +778,35 @@ async function loadChart() {
 
         for (let i = 0; i < selectedMetrics.length; i++) {
             const metricId = selectedMetrics[i];
-            let dataUrl = '/api/analysis/metric-data?metric=' + metricId;
-            if (currentDays) {
-                dataUrl += `&days=${currentDays}`;
-            } else if (customStartDate && customEndDate) {
-                dataUrl += `&start_date=${customStartDate}&end_date=${customEndDate}`;
-            }
+            const dataUrl = '/api/analysis/metric-data?metric=' + metricId + periodParams();
 
             const metricData = await fetch(dataUrl).then(r => r.json());
             const metric = availableMetrics.find(m => m.id === metricId);
+            const plotData = smoothing ? movingAverage(metricData.data) : metricData.data;
 
             allDatasets.push({
-                label: metric.name + ' (' + metric.unit + ')',
-                data: metricData.data,
+                label: metric.unit ? metric.name + ' (' + metric.unit + ')' : metric.name,
+                data: plotData,
                 borderColor: metricColors[i % metricColors.length],
-                backgroundColor: metricColors[i % metricColors.length] + '15',
-                borderWidth: 2,
+                backgroundColor: metricColors[i % metricColors.length] + '18',
+                borderWidth: 2.5,
                 fill: false,
                 tension: 0.4,
                 pointRadius: 3,
                 pointBackgroundColor: metricColors[i % metricColors.length],
                 pointBorderColor: '#fff',
-                pointBorderWidth: 1,
+                pointBorderWidth: 2,
+                pointHoverRadius: 5,
             });
         }
 
-        if (currentChart) {
-            currentChart.destroy();
-        }
+        if (currentChart) { currentChart.destroy(); }
 
         const ctx = document.getElementById('mainChart').getContext('2d');
         currentChart = new Chart(ctx, {
             type: 'line',
-            data: {
-                labels: labels,
-                datasets: allDatasets
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        labels: {
-                            font: { family: "'Nunito', sans-serif", size: 12 },
-                            color: '#666',
-                            padding: 15,
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { font: { family: "'Nunito', sans-serif" } }
-                    },
-                    x: {
-                        ticks: { font: { family: "'Nunito', sans-serif" } }
-                    }
-                }
-            }
+            data: { labels, datasets: allDatasets },
+            options: baseChartOptions()
         });
 
         document.getElementById('correlationInfo').style.display = 'none';
@@ -640,53 +819,37 @@ async function loadChart() {
 // Renderizar gráfica de métrica única
 function renderSingleChart(data, metricId) {
     const metric = availableMetrics.find(m => m.id === metricId);
+    const color = metricColors[0];
 
-    if (currentChart) {
-        currentChart.destroy();
-    }
+    if (currentChart) { currentChart.destroy(); }
 
     const ctx = document.getElementById('mainChart').getContext('2d');
+    const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.offsetHeight);
+    gradient.addColorStop(0, color + '30');
+    gradient.addColorStop(1, color + '00');
+
+    const plotData = smoothing ? movingAverage(data.data) : data.data;
+
     currentChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: data.labels,
             datasets: [{
-                label: metric.name + ' (' + metric.unit + ')',
-                data: data.data,
-                borderColor: '#C67B5C',
-                backgroundColor: 'rgba(198, 123, 92, 0.1)',
-                borderWidth: 2,
+                label: metric.unit ? metric.name + ' (' + metric.unit + ')' : metric.name,
+                data: plotData,
+                borderColor: color,
+                backgroundColor: gradient,
+                borderWidth: 2.5,
                 fill: true,
                 tension: 0.4,
                 pointRadius: 4,
-                pointBackgroundColor: '#C67B5C',
+                pointBackgroundColor: color,
                 pointBorderColor: '#fff',
                 pointBorderWidth: 2,
+                pointHoverRadius: 6,
             }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: true,
-                    labels: {
-                        font: { family: "'Nunito', sans-serif", size: 12 },
-                        color: '#666',
-                        padding: 15,
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { font: { family: "'Nunito', sans-serif" } }
-                },
-                x: {
-                    ticks: { font: { family: "'Nunito', sans-serif" } }
-                }
-            }
-        }
+        options: baseChartOptions()
     });
 
     document.getElementById('correlationInfo').style.display = 'none';
@@ -703,12 +866,7 @@ async function loadCorrelation() {
     }
 
     try {
-        let url = `/api/analysis/correlation?metric1=${metric1}&metric2=${metric2}`;
-        if (currentDays) {
-            url += `&days=${currentDays}`;
-        } else if (customStartDate && customEndDate) {
-            url += `&start_date=${customStartDate}&end_date=${customEndDate}`;
-        }
+        let url = `/api/analysis/correlation?metric1=${metric1}&metric2=${metric2}` + periodParams();
 
         const response = await fetch(url);
         const result = await response.json();
@@ -721,9 +879,7 @@ async function loadCorrelation() {
         const metric1Obj = availableMetrics.find(m => m.id === metric1);
         const metric2Obj = availableMetrics.find(m => m.id === metric2);
 
-        if (currentChart) {
-            currentChart.destroy();
-        }
+        if (currentChart) { currentChart.destroy(); }
 
         const ctx = document.getElementById('mainChart').getContext('2d');
         currentChart = new Chart(ctx, {
@@ -732,43 +888,34 @@ async function loadCorrelation() {
                 datasets: [{
                     label: `${metric1Obj.name} vs ${metric2Obj.name}`,
                     data: result.scatter_data.map(d => ({ x: d.x, y: d.y })),
-                    backgroundColor: '#C67B5C',
+                    backgroundColor: 'rgba(198,123,92,0.55)',
                     borderColor: '#C67B5C',
+                    borderWidth: 1.5,
                     pointRadius: 6,
+                    pointHoverRadius: 8,
                     showLine: false,
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
+            options: baseChartOptions({
+                x: {
+                    type: 'linear',
+                    position: 'bottom',
+                    title: {
                         display: true,
-                        labels: {
-                            font: { family: "'Nunito', sans-serif", size: 12 },
-                            color: '#666',
-                        }
+                        text: `${metric1Obj.name} (${metric1Obj.unit})`,
+                        font: { family: "'Nunito', sans-serif", size: 11 },
+                        color: '#aaa',
                     }
                 },
-                scales: {
-                    x: {
-                        type: 'linear',
-                        position: 'bottom',
-                        title: {
-                            display: true,
-                            text: `${metric1Obj.name} (${metric1Obj.unit})`
-                        },
-                        ticks: { font: { family: "'Nunito', sans-serif" } }
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: `${metric2Obj.name} (${metric2Obj.unit})`
-                        },
-                        ticks: { font: { family: "'Nunito', sans-serif" } }
+                y: {
+                    title: {
+                        display: true,
+                        text: `${metric2Obj.name} (${metric2Obj.unit})`,
+                        font: { family: "'Nunito', sans-serif", size: 11 },
+                        color: '#aaa',
                     }
                 }
-            }
+            })
         });
 
         // Mostrar info de correlación
