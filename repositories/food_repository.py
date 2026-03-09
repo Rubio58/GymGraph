@@ -76,8 +76,7 @@ class FoodRepository:
         meal_food = MealFood(
             grams=grams,
             Food_idFood=food_id,
-            Meal_idMeal=meal_id,
-            Meal_User_idUser=user_id
+            Meal_idMeal=meal_id
         )
         db.add(meal_food)
         db.flush()  # Envía a BD pero no hace commit
