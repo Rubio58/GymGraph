@@ -1,10 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Login</title>
-</head>
-<body>
-    <h2>Iniciar sesión</h2>
+{% extends "base.html" %}
+
+{% block title %}Login - GG {% endblock %}
+
+{% block content %}
+    <h2>Login</h2>
     
     {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -18,18 +17,17 @@
     
     <form method="POST">
         <div>
-            <label>Usuario:</label>
+            <label>User:</label>
             <input type="text" name="username" required>
         </div>
         <br>
         <div>
-            <label>Contraseña:</label>
+            <label>Password:</label>
             <input type="password" name="password" required>
         </div>
         <br>
-        <button type="submit">Entrar</button>
+        <button type="submit">Login</button>
     </form>
     
-    <p>¿No tienes cuenta? <a href="{{ url_for('auth.signup') }}">Regístrate aquí</a></p>
-</body>
-</html>
+    <p>If you don`t have an account <a href="{{ url_for('auth.signup') }}">Signup here</a></p>
+{% endblock %}

@@ -11,7 +11,7 @@
                     <p style="margin: 0; font-weight: bold; font-size: 1.1em;">{{ td.name }}</p>
                     <div>
                         <!-- Botón edit trainday -->
-                        <button onclick="document.getElementById('form-edit-trainday-{{td.idTrainday}}').style.display='block'">edit</button>
+                        <button onclick="document.getElementById('form-edit-trainday-{{td.idTrainday}}').style.display='block'">Edit</button>
                         
                         <!-- Formulario delete trainday -->
                         <form method="POST" 
@@ -24,7 +24,7 @@
                               onsubmit="return confirm('¿Estás seguro?')">
                             <input type="hidden" name="trainday_id" value="{{ td.idTrainday }}">
                             <input type="hidden" name="trainplan_id" value="{{ trainplan_id }}">
-                            <button type="submit">delete</button>
+                            <button type="submit">Delete</button>
                         </form>
                     </div>
                 </div>
@@ -40,8 +40,8 @@
                         <div style="display: flex; gap: 5px;">
                             <input type="text" name="name" placeholder="New name" required style="flex: 1;">
                             <input type="hidden" name="trainday_id" value="{{ td.idTrainday }}">
-                            <button type="submit">Guardar</button>
-                            <button type="button" onclick="document.getElementById('form-edit-trainday-{{td.idTrainday}}').style.display='none'">Cancelar</button>
+                            <button type="submit">Save</button>
+                            <button type="button" onclick="document.getElementById('form-edit-trainday-{{td.idTrainday}}').style.display='none'">Cancel</button>
                         </div>
                     </form>
                 </div>
@@ -54,13 +54,12 @@
                                 <div style="background-color: #e0e0e0; margin: 5px 0; padding: 8px; border-radius: 3px;">
                                     <div style="display: flex; align-items: center; justify-content: space-between;">
                                         <div style="flex: 1;">
-                                            <strong>{{ tde.exercise_name }}</strong> - {{ tde.numSets }} series
+                                            <strong>{{ tde.exercise_name }}</strong> - {{ tde.numSets }} sets
                                             {% if tde.musclegroup %}
                                                 <small>({{ tde.musclegroup }})</small>
                                             {% endif %}
-                                            <small style="color: #999;">(Orden: {{ tde.order }})</small>
                                             {% if tde.notes %}
-                                                <div><small style="color: #666;">Nota: {{ tde.notes }}</small></div>
+                                                <div><small style="color: #666;">Notes: {{ tde.notes }}</small></div>
                                             {% endif %}
                                         </div>
                                         <div style="display: flex; gap: 3px;">
@@ -88,7 +87,7 @@
                                                 onsubmit="return confirm('¿Estás seguro?')">
                                                 <input type="hidden" name="traindayexercise_id" value="{{ tde.idTrainday_exercise }}">
                                                 <input type="hidden" name="trainplan_id" value="{{ trainplan_id }}">
-                                                <button type="submit" style="padding: 2px 6px;">🗑️</button>
+                                                <button type="submit" style="padding: 2px 6px;">X</button>
                                             </form>
                                         </div>
                                     </div>
@@ -116,14 +115,14 @@
                             <input type="hidden" name="trainplan_id" value="{{ trainplan_id }}">
                             
                             <select name="exercise_id" required style="width: 100%; margin-bottom: 5px;">
-                                <option value="">Seleccionar ejercicio</option>
+                                <option value="">Select exercise</option>
                                 {% for ex in exercises %}
                                 <option value="{{ ex.idExercise }}">{{ ex.name }} ({{ ex.musclegroup }})</option>
                                 {% endfor %}
                             </select>       
                             
                             <div style="display: flex; gap: 5px; margin-bottom: 5px;">
-                                <input type="number" name="numSets" step="1" min="1" placeholder="Series" required style="flex: 1;">
+                                <input type="number" name="numSets" step="1" min="1" placeholder="Sets" required style="flex: 1;">
                                 <input type="text" name="notes" placeholder="Notas (opcional)" style="flex: 2;">
                             </div>
                             
@@ -168,7 +167,7 @@
             </div>
             
         {% else %}
-            <p>No hay training days para este plan</p>
+            <p>Add a new training day</p>
             <!-- Botón nuevo trainday cuando no hay ninguno -->
             <div style="margin-top: 20px;">
                 <button onclick="document.getElementById('form-new-trainday').style.display='block'">
@@ -207,17 +206,17 @@
                     {% for musclegroup, total in musclegroup_totals.items() %}
                     <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding: 5px 0; border-bottom: 1px dashed #b0d4e0;">
                         <span><strong>{{ musclegroup }}</strong></span>
-                        <span>{{ total }} series</span>
+                        <span>{{ total }} sets</span>
                     </div>
                     {% endfor %}
                 </div>
                 <div style="display: flex; justify-content: space-between; font-weight: bold; margin-top: 15px; padding-top: 10px; border-top: 2px solid #b0d4e0;">
                     <span>TOTAL</span>
-                    <span>{{ musclegroup_totals.values()|sum }} series</span>
+                    <span>{{ musclegroup_totals.values()|sum }} sets</span>
                 </div>
             {% else %}
                 <p style="text-align: center; color: #666; margin: 20px 0;">
-                    No hay ejercicios<br>en este plan
+                    Add an exercise
                 </p>
             {% endif %}
         </div>
