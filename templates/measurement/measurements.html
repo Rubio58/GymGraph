@@ -1,36 +1,75 @@
-<!-- Formulario -->
-<form method="POST" 
-      action="{{ url_for('measurement.create_measurement') }}"
-      hx-post="{{ url_for('measurement.create_measurement') }}"
-      hx-target="#measurement-container"
-      hx-swap="innerHTML">
-    <input type="hidden" name="meascat_id" value="{{ meascat_id }}">
-    <input type="number" name="val" step="0.01" placeholder="Value ({{ unit }})" required>
-    <input type="submit" value="Add">
-</form>
-
-<!-- Lista -->
-<h3>History</h3>
-{% if measurements and measurements|length > 0 %}
-    {% for m in measurements %}
-    <div>
-        <span>{{ m.val }} {{ unit }}</span>
-        <span>{{ m.date }}</span>
-                <!-- Botón delete measurement -->
+<!-- templates/measurement/measurements.html -->
+<div class="measurement-detail">
+    <!-- Formulario para añadir medición -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <h3 style="margin-top: 0; color: var(--terracotta); font-family: 'Playfair Display', serif; margin-bottom: 1.25rem;">Add new measurement</h3>
+        
         <form method="POST" 
-            action="{{ url_for('measurement.delete_measurement') }}" 
-            style="display: inline;"
-            hx-post="{{ url_for('measurement.delete_measurement') }}"
-            hx-target="#measurement-container"
-            hx-swap="innerHTML"
-            hx-trigger="submit"
-            onsubmit="return confirm('¿Estás seguro?')">
+              action="{{ url_for('measurement.create_measurement') }}"
+              hx-post="{{ url_for('measurement.create_measurement') }}"
+              hx-target="#measurement-container"
+              hx-swap="innerHTML">
+            
             <input type="hidden" name="meascat_id" value="{{ meascat_id }}">
-            <input type="hidden" name="meas_id" value="{{ m.idMeas }}">
-            <button type="submit" style="padding: 2px 6px;">🗑️</button>
+            
+            <div style="display: flex; gap: 1rem; align-items: flex-end;">
+                <div style="flex: 1;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-secondary); font-size: 0.9rem;">
+                        Value ({{ unit }}):
+                    </label>
+                    <input type="number" name="val" step="0.01" placeholder="e.g., 75.5" required
+                           style="width: 100%; padding: 0.85rem; border: 2px solid var(--border-color); border-radius: var(--radius); font-size: 1rem;">
+                </div>
+                <button type="submit" class="btn btn-primary" style="padding: 0.85rem 2rem;">
+                    Add measurement
+                </button>
+            </div>
         </form>
     </div>
-    {% endfor %}
-{% else %}
-    <p>No measurements yet</p>
-{% endif %}
+
+    <!-- Lista de mediciones -->
+    <div class="card">
+        <h3 style="margin-top: 0; color: var(--terracotta); font-family: 'Playfair Display', serif; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+            <span>History</span>
+        </h3>
+        
+        {% if measurements and measurements|length > 0 %}
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                {% for m in measurements %}
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--cream); border-radius: var(--radius); border: 2px solid var(--border-light); transition: var(--transition);">
+                    <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: baseline; gap: 0.25rem;">
+                            <span style="font-size: 1.25rem; font-weight: 700; color: var(--terracotta);">{{ m.val }}</span>
+                            <span style="color: var(--text-muted); font-size: 0.9rem;">{{ unit }}</span>
+                        </div>
+                        <span style="color: var(--text-secondary); font-size: 0.9rem; background: var(--beige); padding: 0.2rem 0.8rem; border-radius: 20px;">
+                            {{ m.date }}
+                        </span>
+                    </div>
+                    
+                    <!-- Botón delete measurement -->
+                    <form method="POST" 
+                        action="{{ url_for('measurement.delete_measurement') }}" 
+                        style="display: inline;"
+                        hx-post="{{ url_for('measurement.delete_measurement') }}"
+                        hx-target="#measurement-container"
+                        hx-swap="innerHTML"
+                        hx-trigger="submit"
+                        onsubmit="return confirm('¿Estás seguro de eliminar esta medición?');">
+                        <input type="hidden" name="meascat_id" value="{{ meascat_id }}">
+                        <input type="hidden" name="meas_id" value="{{ m.idMeas }}">
+                        <button type="submit" class="btn" style="background: var(--brick); color: white; border: none; padding: 0.4rem 0.8rem; font-size: 0.9rem;">
+                            ✕
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="padding: 2rem; text-align: center; background: var(--cream); border-radius: var(--radius);">
+                <p style="color: var(--text-muted); margin-bottom: 0.5rem;">No measurements yet</p>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Add your first measurement using the form above</p>
+            </div>
+        {% endif %}
+    </div>
+</div>

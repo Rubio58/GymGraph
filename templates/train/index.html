@@ -2,53 +2,58 @@
 {% extends "base.html" %}
 
 {% block content %}
-
-<!--PARA DEBUG
-{% with messages = get_flashed_messages(with_categories=true) %} 
-    {% if messages %}
-        <div class="flash-messages">
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    {{ message }}
-                    <button type="button" class="close-btn" onclick="this.parentElement.style.display='none'">&times;</button>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-{% endwith %}-->
-
-    <div style="display: flex;">
-        <!-- Columna izquierda -->
-        <div style="width: 300px; padding: 10px; border-right: 1px solid #ccc;">
-            <h3>Plans</h3>
-            <ul style="list-style-type: none; padding-left: 0;">
+    <div class="train-container" style="display: flex; gap: 2rem;">
+        <!-- Columna izquierda - Plans -->
+        <div class="plans-sidebar" style="width: 320px; padding: 1.5rem; background: var(--cream-dark); border-radius: var(--radius-lg); border: 2px solid var(--border-light);">
+            <h3 style="margin-top: 0; color: var(--terracotta); font-family: 'Playfair Display', serif; margin-bottom: 1.5rem;">Plans</h3>
+            
+            <ul style="list-style-type: none; padding-left: 0; margin-bottom: 2rem;">
                 {% for tp in trainplans %}
-                <li style="margin-bottom: 10px; padding: 8px; background-color: #f5f5f5; display: flex; align-items: center; justify-content: space-between;">
-                    <strong>{{ tp.name }}</strong>
-                    <div>
+                <li style="margin-bottom: 1rem; padding: 1rem; background: white; border-radius: var(--radius); border: 2px solid var(--border-light); box-shadow: var(--shadow-sm);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                        <strong style="color: var(--text-primary); font-size: 1.05rem;">{{ tp.name }}</strong>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                         <!-- Botón select con htmx -->
                         <button 
+                            class="btn btn-primary"
+                            style="padding: 0.4rem 1rem; font-size: 0.9rem;"
                             hx-get="{{ url_for('train.get_traindays', trainplan_id=tp.idTrainplan) }}"
                             hx-target="#traindays-container"
                             hx-trigger="click"
                             hx-swap="innerHTML">
                             Select
                         </button>
-                        <!--Botón editar-->
-                        <button onclick="document.getElementById('form-edit-trainplan-{{tp.idTrainplan}}').style.display='block'">Edit</button>
+                        
+                        <!-- Botón editar -->
+                        <button onclick="document.getElementById('form-edit-trainplan-{{tp.idTrainplan}}').style.display='block'" 
+                                class="btn btn-secondary"
+                                style="padding: 0.4rem 1rem; font-size: 0.9rem;">
+                            Edit
+                        </button>
 
-                        <div id="form-edit-trainplan-{{tp.idTrainplan}}" style="display: none; margin-top: 10px;">
-                            <form method="POST" action="{{ url_for('train.update_trainplan') }}">
-                                <input type="text" name="name" placeholder="New name" required>
-                                <input type="hidden" name="trainplan_id" value="{{ tp.idTrainplan }}">
-                                <button type="submit">Guardar</button>
-                                <button type="button" onclick="document.getElementById('form-edit-trainplan-{{tp.idTrainplan}}').style.display='none'">Cancel</button>
-                            </form>
-                        </div>
                         <!-- Formulario delete -->
-                        <form method="POST" action="{{ url_for('train.delete_trainplan') }}" style="display: inline;">
+                        <form method="POST" action="{{ url_for('train.delete_trainplan') }}" style="display: inline;" onsubmit="return confirm('¿Estás seguro?')">
                             <input type="hidden" name="trainplan_id" value="{{ tp.idTrainplan }}">
-                            <button type="submit" onclick="return confirm('¿Estás seguro?')">Delete</button>
+                            <button type="submit" class="btn" style="background: var(--brick); color: white; border: none; padding: 0.4rem 1rem; font-size: 0.9rem;">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Formulario edit trainplan (oculto) -->
+                    <div id="form-edit-trainplan-{{tp.idTrainplan}}" style="display: none; margin-top: 1rem; padding: 1rem; background: var(--cream); border-radius: var(--radius); border: 2px solid var(--border-color);">
+                        <form method="POST" action="{{ url_for('train.update_trainplan') }}">
+                            <div style="display: flex; gap: 0.5rem; flex-direction: column;">
+                                <input type="text" name="name" placeholder="New name" value="{{ tp.name }}" required
+                                       style="padding: 0.75rem; border: 2px solid var(--border-color); border-radius: var(--radius); width: 100%;">
+                                <input type="hidden" name="trainplan_id" value="{{ tp.idTrainplan }}">
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button type="submit" class="btn btn-primary" style="flex: 1;">Save</button>
+                                    <button type="button" onclick="document.getElementById('form-edit-trainplan-{{tp.idTrainplan}}').style.display='none'" 
+                                            class="btn btn-secondary" style="flex: 1;">Cancel</button>
+                                </div>
+                            </div>
                         </form>
                     </div>
                 </li>
@@ -56,26 +61,37 @@
             </ul>
             
             <!-- Botón new plan -->
-            <button onclick="document.getElementById('form-nuevo-plan').style.display='block'">New plan</button>
+            <button onclick="document.getElementById('form-nuevo-plan').style.display='block'" 
+                    class="btn btn-primary" style="width: 100%;">
+                + New plan
+            </button>
             
             <!-- Formulario nuevo plan -->
-            <div id="form-nuevo-plan" style="display: none; margin-top: 10px;">
+            <div id="form-nuevo-plan" style="display: none; margin-top: 1rem; padding: 1.5rem; background: white; border-radius: var(--radius); border: 2px solid var(--border-light);">
                 <form method="POST" action="{{ url_for('train.create_trainplan') }}">
-                    <input type="text" name="name" placeholder="Plan's name" required>
-                    <button type="submit">Save</button>
-                    <button type="button" onclick="document.getElementById('form-nuevo-plan').style.display='none'">Cancel</button>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-secondary);">Plan name:</label>
+                        <input type="text" name="name" placeholder="e.g., Push/Pull/Legs" required
+                               style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: var(--radius);">
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">Save</button>
+                        <button type="button" onclick="document.getElementById('form-nuevo-plan').style.display='none'" 
+                                class="btn btn-secondary" style="flex: 1;">Cancel</button>
+                    </div>
                 </form>
             </div>
         </div>
         
-        <!-- Columna derecha -->
-        <div style="flex: 1; padding: 10px;">
+        <!-- Columna derecha - Training days -->
+        <div style="flex: 1;">
             <!-- Contenedor para traindays -->
-            <div id="traindays-container" style="display: flex; flex-wrap: wrap; gap: 15px;">
-                <p>Select a training plan</p>
+            <div id="traindays-container">
+                <div class="card" style="padding: 3rem; text-align: center;">
+                    <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 1rem;">Select a training plan</p>
+                    <p style="color: var(--text-secondary);">Choose a plan from the left to view its training days</p>
+                </div>
             </div>
         </div>
     </div>
-    
-    
 {% endblock %}

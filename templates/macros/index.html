@@ -4,32 +4,32 @@
 {% block title %}Macros - GG {% endblock %}
 
 {% block content %}
-<div style="max-width: 800px; margin: 0 auto;">
+<div class="macros-container" style="max-width: 800px; margin: 0 auto;">
     
     <!-- CABECERA CON NAVEGACIÓN DE FECHAS Y BOTÓN NEW FOOD -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div class="macros-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
         
         <!-- NAVEGACIÓN DE FECHAS -->
-        <div style="display: flex; align-items: center; gap: 1rem;">
+        <div class="date-nav" style="display: flex; align-items: center; gap: 1rem;">
             <a href="{{ url_for('macros.index', date=prev_date) }}" 
-               style="background: #f0f0f0; color: #333; border: none; padding: 0.5rem 1rem; border-radius: 5px; text-decoration: none; font-size: 1.2rem;">
+               class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 1.2rem; line-height: 1;">
                 ←
             </a>
             
-            <p style="margin: 0; font-weight: bold; min-width: 120px; text-align: center;">
+            <p class="current-date" style="margin: 0; font-weight: 600; min-width: 120px; text-align: center; color: var(--text-primary);">
                 {{ current_date }}
                 {% if current_date == today %}
-                    <span style="background: #48bb78; color: white; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 10px; margin-left: 0.5rem;">Today</span>
+                    <span class="today-badge" style="background: var(--sage); color: white; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 20px; margin-left: 0.5rem; display: inline-block; font-weight: 500;">Today</span>
                 {% endif %}
             </p>
             
             {% if can_go_next %}
                 <a href="{{ url_for('macros.index', date=next_date) }}" 
-                   style="background: #f0f0f0; color: #333; border: none; padding: 0.5rem 1rem; border-radius: 5px; text-decoration: none; font-size: 1.2rem;">
+                   class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 1.2rem; line-height: 1;">
                     →
                 </a>
             {% else %}
-                <span style="background: #ddd; color: #999; border: none; padding: 0.5rem 1rem; border-radius: 5px; font-size: 1.2rem; opacity: 0.5;">
+                <span class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 1.2rem; line-height: 1; opacity: 0.5; cursor: not-allowed; background: var(--cream-dark); color: var(--text-muted); border-color: var(--border-color);">
                     →
                 </span>
             {% endif %}
@@ -37,45 +37,41 @@
         
         <!-- BOTÓN NEW FOOD -->
         <button onclick="document.getElementById('food-form').style.display='block'" 
-                style="background: #667eea; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer;">
-             + New food
+                class="btn btn-primary" style="padding: 0.5rem 1.5rem;">
+            + New food
         </button>
     </div>
     
     <!-- FORMULARIO NEW FOOD (oculto por defecto) -->
-    <div id="food-form" style="display: none; background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h3 style="margin-top: 0;"> New food</h3>
+    <div id="food-form" class="card" style="display: none; margin-bottom: 2rem;">
+        <h3 style="margin-top: 0; color: var(--terracotta);"> New food</h3>
         <form method="POST" action="{{ url_for('food.create_food') }}">
-            <div style="margin-bottom: 1rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Name:</label>
-                <input type="text" name="name" required
-                       style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px;">
+            <div class="form-group">
+                <label>Name:</label>
+                <input type="text" name="name" required>
             </div>
             
-            <div style="margin-bottom: 1rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Protein (g/100g):</label>
-                <input type="number" name="protein" step="0.1" min="0" required
-                       style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px;">
+            <div class="form-group">
+                <label>Protein (g/100g):</label>
+                <input type="number" name="protein" step="0.1" min="0" required>
             </div>
             
-            <div style="margin-bottom: 1rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Carbohydrates (g/100g):</label>
-                <input type="number" name="carbs" step="0.1" min="0" required
-                       style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px;">
+            <div class="form-group">
+                <label>Carbohydrates (g/100g):</label>
+                <input type="number" name="carbs" step="0.1" min="0" required>
             </div>
             
-            <div style="margin-bottom: 1.5rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Fats (g/100g):</label>
-                <input type="number" name="fats" step="0.1" min="0" required
-                       style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px;">
+            <div class="form-group">
+                <label>Fats (g/100g):</label>
+                <input type="number" name="fats" step="0.1" min="0" required>
             </div>
             
             <div style="display: flex; gap: 1rem;">
-                <button type="submit" style="background: #48bb78; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; flex: 1;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">
                     Save
                 </button>
                 <button type="button" onclick="document.getElementById('food-form').style.display='none'" 
-                        style="background: #999; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer;">
+                        class="btn btn-secondary" style="flex: 1;">
                     Cancel
                 </button>
             </div>
@@ -86,11 +82,11 @@
     <div style="margin-bottom: 2rem;">
         {% if current_date == today %}
             <button onclick="document.getElementById('meal-form').style.display='block'" 
-                    style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; border: none; padding: 1rem 2rem; border-radius: 5px; font-size: 1.1rem; cursor: pointer; width: 100%;">
+                    class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem; background: linear-gradient(135deg, var(--sage) 0%, var(--olive) 100%);">
                 + Add meal
             </button>
         {% else %}
-            <button disabled style="background: #ccc; color: #666; border: none; padding: 1rem 2rem; border-radius: 5px; font-size: 1.1rem; width: 100%; opacity: 0.6;" title="Solo puedes añadir comidas en la fecha actual">
+            <button disabled class="btn btn-secondary" style="width: 100%; padding: 1rem; font-size: 1.1rem; opacity: 0.6; cursor: not-allowed;" title="Solo puedes añadir comidas en la fecha actual">
                 + Add meal 
             </button>
         {% endif %}
@@ -98,15 +94,15 @@
     
     <!-- FORMULARIO ADD MEAL (oculto por defecto) -->
     {% if current_date == today %}
-    <div id="meal-form" style="display: none; background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h3 style="margin-top: 0;">Add meal</h3>
+    <div id="meal-form" class="card" style="display: none; margin-bottom: 2rem;">
+        <h3 style="margin-top: 0; color: var(--terracotta);">Add meal</h3>
         
         <form method="POST" action="{{ url_for('food.create_meal') }}" id="add-meal-form">
             <div id="foods-container">
                 <!-- Fila inicial -->
-                <div class="food-row" style="margin-bottom: 1rem; padding: 1rem; background: #f7fafc; border-radius: 5px;">
+                <div class="food-row" style="margin-bottom: 1rem; padding: 1rem; background: var(--cream-dark); border-radius: var(--radius); border: 2px solid var(--border-light);">
                     <div style="display: flex; gap: 0.5rem; align-items: center;">
-                        <select name="food_id_0" required style="flex: 2; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px;">
+                        <select name="food_id_0" required style="flex: 2; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: var(--radius); background: white;">
                             <option value="">Select food</option>
                             {% for food in foods %}
                             <option value="{{ food.id }}">{{ food.name }} ({{ "%.0f"|format(food.kcal) }} kcal)</option>
@@ -114,10 +110,10 @@
                         </select>
                         
                         <input type="number" name="grams_0" step="1" min="1" placeholder="Gramos" required
-                               style="flex: 1; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px;">
+                               style="flex: 1; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: var(--radius);">
                         
                         <button type="button" onclick="this.parentElement.parentElement.remove()" 
-                                style="background: #e53e3e; color: white; border: none; padding: 0.75rem 1rem; border-radius: 5px; cursor: pointer;">
+                                class="btn" style="background: var(--brick); color: white; border: none; padding: 0.75rem 1rem;">
                             ✕
                         </button>
                     </div>
@@ -127,17 +123,17 @@
             <!-- Botón para añadir más alimentos -->
             <div style="margin-bottom: 1.5rem;">
                 <button type="button" onclick="addFoodRow()" 
-                        style="background: #48bb78; color: white; border: none; padding: 0.75rem 1rem; border-radius: 5px; cursor: pointer; width: 100%;">
+                        class="btn btn-secondary" style="width: 100%;">
                     + Add food
                 </button>
             </div>
             
             <div style="display: flex; gap: 1rem;">
-                <button type="submit" style="background: #667eea; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; flex: 1;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">
                     Save meal
                 </button>
                 <button type="button" onclick="document.getElementById('meal-form').style.display='none'" 
-                        style="background: #999; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer;">
+                        class="btn btn-secondary" style="flex: 1;">
                     Cancel
                 </button>
             </div>
@@ -148,97 +144,101 @@
     <!-- LISTA DE COMIDAS -->
     {% if meals %}
         {% for meal in meals %}
-        <div class="meal-card" style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div class="card meal-card" style="margin-bottom: 1.5rem; padding: 0; overflow: hidden;">
             
             <!-- MODO VISUALIZACIÓN -->
-            <div class="meal-view" id="view-{{ meal.id }}">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #f0f0f0;">
-                    <h3 style="margin: 0; color: #4a5568;">Meal {{ loop.index }}</h3>
+            <div class="meal-view" id="view-{{ meal.id }}" style="padding: 1.75rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--border-light);">
+                    <h3 style="margin: 0; color: var(--terracotta); font-family: 'Playfair Display', serif;">Meal {{ loop.index }}</h3>
                     <div style="display: flex; gap: 0.5rem;">
                         <!-- Botón Editar -->
                         <button onclick="document.getElementById('view-{{ meal.id }}').style.display='none'; document.getElementById('edit-{{ meal.id }}').style.display='block'" 
-                                style="background: #667eea; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 5px; cursor: pointer; font-size: 0.9rem;">
+                                class="btn btn-secondary" style="padding: 0.3rem 1rem; font-size: 0.9rem;">
                             Edit
                         </button>
                         
                         <!-- Formulario Eliminar -->
                         <form method="POST" action="{{ url_for('food.delete_meal', meal_id=meal.id) }}" style="display: inline;" onsubmit="return confirm('¿Estás seguro?');">
                             <input type="hidden" name="date" value="{{ current_date }}">
-                            <button type="submit" style="background: #e53e3e; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 5px; cursor: pointer; font-size: 0.9rem;">
+                            <button type="submit" class="btn" style="background: var(--brick); color: white; border: none; padding: 0.3rem 1rem; font-size: 0.9rem;">
                                 Delete
                             </button>
                         </form>
                     </div>
                 </div>
                 
-                <table style="width: 100%; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #f7fafc;">
-                            <th style="padding: 0.75rem; text-align: left;">Food</th>
-                            <th style="padding: 0.75rem; text-align: center;">Grams</th>
-                            <th style="padding: 0.75rem; text-align: center;">Kcal</th>
-                            <th style="padding: 0.75rem; text-align: center;">P</th>
-                            <th style="padding: 0.75rem; text-align: center;">C</th>
-                            <th style="padding: 0.75rem; text-align: center;">G</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for food in meal.foods %}
-                        <tr>
-                            <td style="padding: 0.5rem;">{{ food.name }}</td>
-                            <td style="padding: 0.5rem; text-align: center;">{{ "%.0f"|format(food.grams) }}g</td>
-                            <td style="padding: 0.5rem; text-align: center;">{{ "%.0f"|format(food.kcal) }}</td>
-                            <td style="padding: 0.5rem; text-align: center;">{{ "%.1f"|format(food.protein) }}g</td>
-                            <td style="padding: 0.5rem; text-align: center;">{{ "%.1f"|format(food.carbs) }}g</td>
-                            <td style="padding: 0.5rem; text-align: center;">{{ "%.1f"|format(food.fats) }}g</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                    <tfoot>
-                        <tr style="font-weight: bold; background: #edf2f7;">
-                            <td style="padding: 0.75rem;" colspan="2">Totals:</td>
-                            <td style="padding: 0.75rem; text-align: center;">{{ "%.0f"|format(meal.totals.kcal) }} kcal</td>
-                            <td style="padding: 0.75rem; text-align: center;">{{ "%.1f"|format(meal.totals.protein) }}g</td>
-                            <td style="padding: 0.75rem; text-align: center;">{{ "%.1f"|format(meal.totals.carbs) }}g</td>
-                            <td style="padding: 0.75rem; text-align: center;">{{ "%.1f"|format(meal.totals.fats) }}g</td>
-                        </tr>
-                    </tfoot>
-                </table>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+                        <thead>
+                            <tr style="background: var(--cream-dark);">
+                                <th style="padding: 0.75rem; text-align: left; border-radius: var(--radius) 0 0 0;">Food</th>
+                                <th style="padding: 0.75rem; text-align: center;">Grams</th>
+                                <th style="padding: 0.75rem; text-align: center;">Kcal</th>
+                                <th style="padding: 0.75rem; text-align: center;">P</th>
+                                <th style="padding: 0.75rem; text-align: center;">C</th>
+                                <th style="padding: 0.75rem; text-align: center; border-radius: 0 var(--radius) 0 0;">G</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for food in meal.foods %}
+                            <tr style="border-bottom: 1px solid var(--border-light);">
+                                <td style="padding: 0.75rem 0.5rem;">{{ food.name }}</td>
+                                <td style="padding: 0.75rem 0.5rem; text-align: center;">{{ "%.0f"|format(food.grams) }}g</td>
+                                <td style="padding: 0.75rem 0.5rem; text-align: center;">{{ "%.0f"|format(food.kcal) }}</td>
+                                <td style="padding: 0.75rem 0.5rem; text-align: center;">{{ "%.1f"|format(food.protein) }}g</td>
+                                <td style="padding: 0.75rem 0.5rem; text-align: center;">{{ "%.1f"|format(food.carbs) }}g</td>
+                                <td style="padding: 0.75rem 0.5rem; text-align: center;">{{ "%.1f"|format(food.fats) }}g</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr style="font-weight: 700; background: var(--cream);">
+                                <td style="padding: 0.75rem 0.5rem;" colspan="2">Totals:</td>
+                                <td style="padding: 0.75rem 0.5rem; text-align: center; color: var(--terracotta);">{{ "%.0f"|format(meal.totals.kcal) }} kcal</td>
+                                <td style="padding: 0.75rem 0.5rem; text-align: center; color: var(--terracotta);">{{ "%.1f"|format(meal.totals.protein) }}g</td>
+                                <td style="padding: 0.75rem 0.5rem; text-align: center; color: var(--terracotta);">{{ "%.1f"|format(meal.totals.carbs) }}g</td>
+                                <td style="padding: 0.75rem 0.5rem; text-align: center; color: var(--terracotta);">{{ "%.1f"|format(meal.totals.fats) }}g</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
             
             <!-- MODO EDICIÓN -->
-            <div class="meal-edit" id="edit-{{ meal.id }}" style="display: none;">
-                <h3 style="margin-top: 0;"> Edit meal</h3>
+            <div class="meal-edit" id="edit-{{ meal.id }}" style="display: none; padding: 1.75rem;">
+                <h3 style="margin-top: 0; color: var(--terracotta);"> Edit meal</h3>
                 <form method="POST" action="{{ url_for('food.update_meal', meal_id=meal.id) }}">
                     <div class="edit-foods-container">
                         {% for food in meal.foods %}
-                        <div class="edit-food-row" style="margin-bottom: 1rem; padding: 1rem; background: #f7fafc; border-radius: 5px;">
+                        <div class="edit-food-row" style="margin-bottom: 1rem; padding: 1rem; background: var(--cream-dark); border-radius: var(--radius); border: 2px solid var(--border-light);">
                             <input type="hidden" name="meal_food_id_{{ loop.index0 }}" value="{{ food.meal_food_id }}">
                             
-                            <select name="food_{{ loop.index0 }}" required style="width: 45%; padding: 0.5rem; margin-right: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
-                                <option value="">Select food</option>
-                                {% for f in foods %}
-                                <option value="{{ f.id }}" {% if f.id == food.food_id %}selected{% endif %}>
-                                    {{ f.name }} ({{ "%.0f"|format(f.kcal) }} kcal | P:{{ f.protein }} C:{{ f.carbs }} G:{{ f.fats }})
-                                </option>
-                                {% endfor %}
-                            </select>
-                            
-                            <input type="number" name="grams_{{ loop.index0 }}" step="1" min="1" value="{{ "%.0f"|format(food.grams) }}" required
-                                style="width: 20%; padding: 0.5rem; margin-right: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
-                            
-                            <button type="button" onclick="this.parentElement.remove()" 
-                                    style="background: #e53e3e; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer;">
-                                ✕
-                            </button>
+                            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                                <select name="food_{{ loop.index0 }}" required style="flex: 2; min-width: 200px; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: var(--radius); background: white;">
+                                    <option value="">Select food</option>
+                                    {% for f in foods %}
+                                    <option value="{{ f.id }}" {% if f.id == food.food_id %}selected{% endif %}>
+                                        {{ f.name }} ({{ "%.0f"|format(f.kcal) }} kcal | P:{{ f.protein }} C:{{ f.carbs }} G:{{ f.fats }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                
+                                <input type="number" name="grams_{{ loop.index0 }}" step="1" min="1" value="{{ "%.0f"|format(food.grams) }}" required
+                                    style="flex: 1; min-width: 100px; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: var(--radius);">
+                                
+                                <button type="button" onclick="this.parentElement.parentElement.remove()" 
+                                        class="btn" style="background: var(--brick); color: white; border: none; padding: 0.75rem 1rem;">
+                                    ✕
+                                </button>
+                            </div>
                         </div>
                         {% endfor %}
                     </div>
                     
                     <!-- BOTÓN AÑADIR OTRO ALIMENTO -->
-                    <div style="margin: 1rem 0;">
+                    <div style="margin: 1.5rem 0;">
                         <button type="button" onclick="addEditFoodRow('{{ meal.id }}')" 
-                                style="background: #48bb78; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; width: 100%;">
+                                class="btn btn-secondary" style="width: 100%;">
                              Add food
                         </button>
                     </div>
@@ -246,11 +246,11 @@
                     <input type="hidden" name="date" value="{{ current_date }}">
                     
                     <div style="display: flex; gap: 1rem;">
-                        <button type="submit" style="background: #667eea; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; flex: 1;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">
                             Save changes
                         </button>
                         <button type="button" onclick="document.getElementById('view-{{ meal.id }}').style.display='block'; document.getElementById('edit-{{ meal.id }}').style.display='none'" 
-                                style="background: #999; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; flex: 1;">
+                                class="btn btn-secondary" style="flex: 1;">
                             Cancel
                         </button>
                     </div>
@@ -259,30 +259,37 @@
         </div>
         {% endfor %}
     {% else %}
-        <div style="background: white; padding: 3rem; text-align: center; color: #999; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            <p style="font-size: 1.5rem; margin-bottom: 1rem;"> No meals {{ 'today' if current_date == today else 'on this date' }}</p>
+        <div class="card" style="padding: 3rem; text-align: center;">
+            <p style="font-size: 1.25rem; color: var(--text-muted); margin-bottom: 1rem;"> No meals {{ 'today' if current_date == today else 'on this date' }}</p>
+            {% if current_date == today %}
+            <p style="color: var(--text-secondary);">Click the "Add meal" button to start tracking your nutrition.</p>
+            {% endif %}
         </div>
     {% endif %}
     
     <!-- TOTALES DEL DÍA -->
     {% if meals %}
-    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 10px; margin-top: 2rem;">
+    <div class="card" style="background: linear-gradient(135deg, var(--terracotta) 0%, var(--brick) 100%); color: white; margin-top: 2rem; border: none;">
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; text-align: center;">
             <div>
-                <div style="font-size: 0.9rem; opacity: 0.9;">Calories</div>
-                <div style="font-size: 1.5rem; font-weight: bold;">{{ "%.0f"|format(totals.kcal) }} kcal</div>
+                <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.25rem;">Calories</div>
+                <div style="font-size: 1.75rem; font-weight: 700; font-family: 'Playfair Display', serif;">{{ "%.0f"|format(totals.kcal) }}</div>
+                <div style="font-size: 0.8rem; opacity: 0.8;">kcal</div>
             </div>
             <div>
-                <div style="font-size: 0.9rem; opacity: 0.9;">Protein</div>
-                <div style="font-size: 1.5rem; font-weight: bold;">{{ "%.1f"|format(totals.protein) }}g</div>
+                <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.25rem;">Protein</div>
+                <div style="font-size: 1.75rem; font-weight: 700; font-family: 'Playfair Display', serif;">{{ "%.1f"|format(totals.protein) }}</div>
+                <div style="font-size: 0.8rem; opacity: 0.8;">g</div>
             </div>
             <div>
-                <div style="font-size: 0.9rem; opacity: 0.9;">Carbohydrates</div>
-                <div style="font-size: 1.5rem; font-weight: bold;">{{ "%.1f"|format(totals.carbs) }}g</div>
+                <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.25rem;">Carbs</div>
+                <div style="font-size: 1.75rem; font-weight: 700; font-family: 'Playfair Display', serif;">{{ "%.1f"|format(totals.carbs) }}</div>
+                <div style="font-size: 0.8rem; opacity: 0.8;">g</div>
             </div>
             <div>
-                <div style="font-size: 0.9rem; opacity: 0.9;">Fats</div>
-                <div style="font-size: 1.5rem; font-weight: bold;">{{ "%.1f"|format(totals.fats) }}g</div>
+                <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.25rem;">Fats</div>
+                <div style="font-size: 1.75rem; font-weight: 700; font-family: 'Playfair Display', serif;">{{ "%.1f"|format(totals.fats) }}</div>
+                <div style="font-size: 0.8rem; opacity: 0.8;">g</div>
             </div>
         </div>
     </div>
@@ -306,17 +313,18 @@ function addFoodRow() {
     newRow.className = 'food-row';
     newRow.style.marginBottom = '1rem';
     newRow.style.padding = '1rem';
-    newRow.style.background = '#f7fafc';
-    newRow.style.borderRadius = '5px';
+    newRow.style.background = 'var(--cream-dark)';
+    newRow.style.borderRadius = 'var(--radius)';
+    newRow.style.border = '2px solid var(--border-light)';
     newRow.innerHTML = `
         <div style="display: flex; gap: 0.5rem; align-items: center;">
-            <select name="food_id_${foodRowCount}" required style="flex: 2; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px;">
+            <select name="food_id_${foodRowCount}" required style="flex: 2; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: var(--radius); background: white;">
                 ${foodOptions}
             </select>
             <input type="number" name="grams_${foodRowCount}" step="1" min="1" placeholder="Gramos" required
-                   style="flex: 1; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px;">
+                   style="flex: 1; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: var(--radius);">
             <button type="button" onclick="this.parentElement.parentElement.remove()" 
-                    style="background: #e53e3e; color: white; border: none; padding: 0.75rem 1rem; border-radius: 5px; cursor: pointer;">
+                    class="btn" style="background: var(--brick); color: white; border: none; padding: 0.75rem 1rem;">
                 ✕
             </button>
         </div>
@@ -339,39 +347,48 @@ function addEditFoodRow(mealId) {
     newRow.className = 'edit-food-row';
     newRow.style.marginBottom = '1rem';
     newRow.style.padding = '1rem';
-    newRow.style.background = '#f7fafc';
-    newRow.style.borderRadius = '5px';
+    newRow.style.background = 'var(--cream-dark)';
+    newRow.style.borderRadius = 'var(--radius)';
+    newRow.style.border = '2px solid var(--border-light)';
     newRow.innerHTML = `
-        <!-- Los nuevos alimentos NO tienen meal_food_id -->
-        <select name="food_${foodCount}" required style="width:45%; padding:0.5rem; margin-right:0.5rem; border:1px solid #ddd; border-radius:5px;">
-            ${foodOptions}
-        </select>
-        <input type="number" name="grams_${foodCount}" step="1" min="1" placeholder="Gramos" required
-               style="width:20%; padding:0.5rem; margin-right:0.5rem; border:1px solid #ddd; border-radius:5px;">
-        <button type="button" onclick="this.parentElement.remove()" 
-                style="background:#e53e3e; color:white; border:none; padding:0.5rem 1rem; border-radius:5px; cursor:pointer;">
-            ✕
-        </button>
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            <select name="food_${foodCount}" required style="flex:2; min-width:200px; padding:0.75rem; border:2px solid var(--border-color); border-radius:var(--radius); background:white;">
+                ${foodOptions}
+            </select>
+            <input type="number" name="grams_${foodCount}" step="1" min="1" placeholder="Gramos" required
+                   style="flex:1; min-width:100px; padding:0.75rem; border:2px solid var(--border-color); border-radius:var(--radius);">
+            <button type="button" onclick="this.parentElement.parentElement.remove()" 
+                    class="btn" style="background:var(--brick); color:white; border:none; padding:0.75rem 1rem;">
+                ✕
+            </button>
+        </div>
     `;
     container.appendChild(newRow);
 }
 </script>
 
 <style>
-    button:hover:not(:disabled) {
-        opacity: 0.9;
-    }
-    button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-    input:focus, select:focus {
-        outline: none;
-        border-color: #667eea !important;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
     .meal-card {
-        transition: all 0.3s ease;
+        transition: var(--transition);
+    }
+    .meal-card:hover {
+        box-shadow: var(--shadow);
+    }
+    table th {
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.8rem;
+    }
+    table td {
+        color: var(--text-primary);
+    }
+    .today-badge {
+        background: var(--sage) !important;
+    }
+    .btn:active {
+        transform: translateY(0);
     }
 </style>
 {% endblock %}
