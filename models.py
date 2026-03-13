@@ -101,7 +101,7 @@ class Meas(Base):
 
     idMeas: Mapped[int] = mapped_column(Integer, primary_key=True)
     val: Mapped[decimal.Decimal] = mapped_column(DECIMAL(5, 2), nullable=False)
-    date: Mapped[str] = mapped_column(String(45), nullable=False)
+    date: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
     MeasCat_idMeasCat: Mapped[int] = mapped_column(Integer, primary_key=True)
     User_idUser: Mapped[int] = mapped_column(Integer, primary_key=True)
 

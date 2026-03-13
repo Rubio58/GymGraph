@@ -1,6 +1,29 @@
-<!-- templates/meas/index.html -->
 {% extends "base.html" %}
 
 {% block content %}
+<div style="display: flex;">
+    <!-- Columna izquierda - Categorías -->
+    <div style="width: 300px; padding: 10px;">
+        <h3>Categories</h3>
+        {% for mc in meascats %}
+        <div style="margin-bottom: 10px;">
+            <strong>{{ mc.name }}</strong> ({{ mc.unit }})
+            <button 
+                hx-get="{{ url_for('measurement.get_measurements', meascat_id=mc.idMeasCat) }}"
+                hx-target="#measurement-container"
+                hx-trigger="click"
+                hx-swap="innerHTML">
+                Select
+            </button>
+        </div>
+        {% endfor %}
+    </div>
 
+    <!-- Columna derecha - Measurements -->
+    <div style="flex: 1; padding: 10px;">
+        <div id="measurement-container">
+            <p>Select a category</p>
+        </div>
+    </div>
+</div>
 {% endblock %}
