@@ -24,41 +24,54 @@ class AnalysisService:
         """
         if end_date is None:
             end_date = date.today()
+        is_hourly = False
         if all_time:
             start_date = self._get_first_data_date(user_id)
         elif start_date is None:
-            start_date = end_date - timedelta(days=days)
+            if days == 1:
+                start_date = end_date
+                is_hourly = True
+            else:
+                start_date = end_date - timedelta(days=days - 1)
+        elif start_date == end_date:
+            is_hourly = True
 
         if metric_type == 'calories':
-            return self._get_calories_data(user_id, start_date, end_date)
+            return self._get_calories_data(user_id, start_date, end_date, is_hourly)
         elif metric_type == 'protein':
-            return self._get_macros_data(user_id, start_date, end_date, 'protein')
+            return self._get_macros_data(user_id, start_date, end_date, 'protein', is_hourly)
         elif metric_type == 'carbs':
-            return self._get_macros_data(user_id, start_date, end_date, 'carbs')
+            return self._get_macros_data(user_id, start_date, end_date, 'carbs', is_hourly)
         elif metric_type == 'fats':
-            return self._get_macros_data(user_id, start_date, end_date, 'fats')
+            return self._get_macros_data(user_id, start_date, end_date, 'fats', is_hourly)
         elif metric_type == 'weight_avg':
-            return self._get_weight_avg_data(user_id, start_date, end_date)
+            return self._get_weight_avg_data(user_id, start_date, end_date, is_hourly)
         elif metric_type == 'volume':
-            return self._get_volume_data(user_id, start_date, end_date)
+            return self._get_volume_data(user_id, start_date, end_date, is_hourly)
         elif metric_type == 'sets':
-            return self._get_sets_data(user_id, start_date, end_date)
+            return self._get_sets_data(user_id, start_date, end_date, is_hourly)
         elif metric_type == 'reps_avg':
-            return self._get_reps_avg_data(user_id, start_date, end_date)
+            return self._get_reps_avg_data(user_id, start_date, end_date, is_hourly)
         elif metric_type == 'meals_count':
-            return self._get_meals_count_data(user_id, start_date, end_date)
+            return self._get_meals_count_data(user_id, start_date, end_date, is_hourly)
         elif metric_type == 'workouts_count':
-            return self._get_workouts_count_data(user_id, start_date, end_date)
+            return self._get_workouts_count_data(user_id, start_date, end_date, is_hourly)
         elif metric_type.startswith('meas_'):
             cat_id = int(metric_type.split('_', 1)[1])
-            return self._get_meas_data(user_id, cat_id, start_date, end_date)
+            return self._get_meas_data(user_id, cat_id, start_date, end_date, is_hourly)
         else:
             return {'labels': [], 'data': []}
 
-    def _get_calories_data(self, user_id, start_date, end_date):
-        """Calorías consumidas por día"""
+    def _get_grouping_col(self, col, is_hourly):
+        if is_hourly:
+            return func.date_format(col, '%H:00')
+        return func.date(col)
+
+    def _get_calories_data(self, user_id, start_date, end_date, is_hourly):
+        """Calorías consumidas por día o por hora"""
+        group_col = self._get_grouping_col(Meal.date, is_hourly)
         result = self.session.query(
-            Meal.date.label('date'),
+            group_col.label('date_label'),
             func.sum((MealFood.grams * Food.kcal_p100) / 100).label('kcal')
         ).join(
             MealFood, Meal.idMeal == MealFood.Meal_idMeal
@@ -66,23 +79,21 @@ class AnalysisService:
             Food, MealFood.Food_idFood == Food.idFood
         ).filter(
             Meal.User_idUser == user_id,
-            Meal.date >= str(start_date),
-            Meal.date <= str(end_date)
+            func.date(Meal.date) >= start_date,
+            func.date(Meal.date) <= end_date
         ).group_by(
-            Meal.date
+            group_col
         ).order_by(
-            Meal.date
+            group_col
         ).all()
 
-        return {
-            'labels': [str(r.date) for r in result],
-            'data': [float(r.kcal or 0) for r in result]
-        }
+        return self._format_result(result, is_hourly, 'kcal', start_date)
 
-    def _get_macros_data(self, user_id, start_date, end_date, macro_type):
-        """Macros por día (protein, carbs, fats)"""
+    def _get_macros_data(self, user_id, start_date, end_date, macro_type, is_hourly):
+        """Macros por día o por hora (protein, carbs, fats)"""
+        group_col = self._get_grouping_col(Meal.date, is_hourly)
         result = self.session.query(
-            Meal.date.label('date'),
+            group_col.label('date_label'),
             func.sum((MealFood.grams * getattr(Food, f'{macro_type}_p100')) / 100).label('amount')
         ).join(
             MealFood, Meal.idMeal == MealFood.Meal_idMeal
@@ -90,23 +101,21 @@ class AnalysisService:
             Food, MealFood.Food_idFood == Food.idFood
         ).filter(
             Meal.User_idUser == user_id,
-            Meal.date >= str(start_date),
-            Meal.date <= str(end_date)
+            func.date(Meal.date) >= start_date,
+            func.date(Meal.date) <= end_date
         ).group_by(
-            Meal.date
+            group_col
         ).order_by(
-            Meal.date
+            group_col
         ).all()
 
-        return {
-            'labels': [str(r.date) for r in result],
-            'data': [float(r.amount or 0) for r in result]
-        }
+        return self._format_result(result, is_hourly, 'amount', start_date)
 
-    def _get_weight_avg_data(self, user_id, start_date, end_date):
-        """Promedio de peso levantado por día"""
+    def _get_weight_avg_data(self, user_id, start_date, end_date, is_hourly):
+        """Promedio de peso levantado por día o por hora"""
+        group_col = self._get_grouping_col(Set.date, is_hourly)
         result = self.session.query(
-            func.date(Set.date).label('workout_date'),
+            group_col.label('date_label'),
             func.avg(Set.weight).label('avg_weight')
         ).join(
             TraindayExercise, Set.Trainday_exercise_idTrainday_exercise == TraindayExercise.idTrainday_exercise
@@ -119,20 +128,18 @@ class AnalysisService:
             func.date(Set.date) >= start_date,
             func.date(Set.date) <= end_date
         ).group_by(
-            func.date(Set.date)
+            group_col
         ).order_by(
-            func.date(Set.date)
+            group_col
         ).all()
 
-        return {
-            'labels': [str(r.workout_date) for r in result],
-            'data': [float(r.avg_weight or 0) for r in result]
-        }
+        return self._format_result(result, is_hourly, 'avg_weight', start_date)
 
-    def _get_volume_data(self, user_id, start_date, end_date):
-        """Volumen total de entrenamiento por día"""
+    def _get_volume_data(self, user_id, start_date, end_date, is_hourly):
+        """Volumen total de entrenamiento por día o por hora"""
+        group_col = self._get_grouping_col(Set.date, is_hourly)
         result = self.session.query(
-            func.date(Set.date).label('workout_date'),
+            group_col.label('date_label'),
             func.sum(Set.weight * Set.reps).label('total_volume')
         ).join(
             TraindayExercise, Set.Trainday_exercise_idTrainday_exercise == TraindayExercise.idTrainday_exercise
@@ -145,20 +152,18 @@ class AnalysisService:
             func.date(Set.date) >= start_date,
             func.date(Set.date) <= end_date
         ).group_by(
-            func.date(Set.date)
+            group_col
         ).order_by(
-            func.date(Set.date)
+            group_col
         ).all()
 
-        return {
-            'labels': [str(r.workout_date) for r in result],
-            'data': [float(r.total_volume or 0) for r in result]
-        }
+        return self._format_result(result, is_hourly, 'total_volume', start_date)
 
-    def _get_sets_data(self, user_id, start_date, end_date):
-        """Total de series por día"""
+    def _get_sets_data(self, user_id, start_date, end_date, is_hourly):
+        """Total de series por día o por hora"""
+        group_col = self._get_grouping_col(Set.date, is_hourly)
         result = self.session.query(
-            func.date(Set.date).label('workout_date'),
+            group_col.label('date_label'),
             func.count(Set.idSet).label('total_sets')
         ).join(
             TraindayExercise, Set.Trainday_exercise_idTrainday_exercise == TraindayExercise.idTrainday_exercise
@@ -171,20 +176,18 @@ class AnalysisService:
             func.date(Set.date) >= start_date,
             func.date(Set.date) <= end_date
         ).group_by(
-            func.date(Set.date)
+            group_col
         ).order_by(
-            func.date(Set.date)
+            group_col
         ).all()
 
-        return {
-            'labels': [str(r.workout_date) for r in result],
-            'data': [int(r.total_sets or 0) for r in result]
-        }
+        return self._format_result(result, is_hourly, 'total_sets', start_date)
 
-    def _get_reps_avg_data(self, user_id, start_date, end_date):
-        """Promedio de reps por día"""
+    def _get_reps_avg_data(self, user_id, start_date, end_date, is_hourly):
+        """Promedio de reps por día o por hora"""
+        group_col = self._get_grouping_col(Set.date, is_hourly)
         result = self.session.query(
-            func.date(Set.date).label('workout_date'),
+            group_col.label('date_label'),
             func.avg(Set.reps).label('avg_reps')
         ).join(
             TraindayExercise, Set.Trainday_exercise_idTrainday_exercise == TraindayExercise.idTrainday_exercise
@@ -197,40 +200,36 @@ class AnalysisService:
             func.date(Set.date) >= start_date,
             func.date(Set.date) <= end_date
         ).group_by(
-            func.date(Set.date)
+            group_col
         ).order_by(
-            func.date(Set.date)
+            group_col
         ).all()
 
-        return {
-            'labels': [str(r.workout_date) for r in result],
-            'data': [float(r.avg_reps or 0) for r in result]
-        }
+        return self._format_result(result, is_hourly, 'avg_reps', start_date)
 
-    def _get_meals_count_data(self, user_id, start_date, end_date):
-        """Número de comidas por día"""
+    def _get_meals_count_data(self, user_id, start_date, end_date, is_hourly):
+        """Número de comidas por día o por hora"""
+        group_col = self._get_grouping_col(Meal.date, is_hourly)
         result = self.session.query(
-            Meal.date.label('date'),
+            group_col.label('date_label'),
             func.count(Meal.idMeal).label('meal_count')
         ).filter(
             Meal.User_idUser == user_id,
-            Meal.date >= str(start_date),
-            Meal.date <= str(end_date)
+            func.date(Meal.date) >= start_date,
+            func.date(Meal.date) <= end_date
         ).group_by(
-            Meal.date
+            group_col
         ).order_by(
-            Meal.date
+            group_col
         ).all()
 
-        return {
-            'labels': [str(r.date) for r in result],
-            'data': [int(r.meal_count or 0) for r in result]
-        }
+        return self._format_result(result, is_hourly, 'meal_count', start_date)
 
-    def _get_workouts_count_data(self, user_id, start_date, end_date):
-        """Número de entrenamientos por día"""
+    def _get_workouts_count_data(self, user_id, start_date, end_date, is_hourly):
+        """Número de entrenamientos por día o por hora"""
+        group_col = self._get_grouping_col(Set.date, is_hourly)
         result = self.session.query(
-            func.date(Set.date).label('workout_date'),
+            group_col.label('date_label'),
             func.count(func.distinct(TraindayExercise.Trainday_idTrainday)).label('workout_count')
         ).join(
             TraindayExercise, Set.Trainday_exercise_idTrainday_exercise == TraindayExercise.idTrainday_exercise
@@ -243,15 +242,12 @@ class AnalysisService:
             func.date(Set.date) >= start_date,
             func.date(Set.date) <= end_date
         ).group_by(
-            func.date(Set.date)
+            group_col
         ).order_by(
-            func.date(Set.date)
+            group_col
         ).all()
 
-        return {
-            'labels': [str(r.workout_date) for r in result],
-            'data': [int(r.workout_count or 0) for r in result]
-        }
+        return self._format_result(result, is_hourly, 'workout_count', start_date)
 
     def _get_first_data_date(self, user_id):
         """Retorna la fecha del primer dato registrado por el usuario en cualquier tabla"""
@@ -273,21 +269,49 @@ class AnalysisService:
             candidates.append(date.fromisoformat(str(meas_min)[:10]))
         return min(candidates) if candidates else date.today() - timedelta(days=30)
 
-    def _get_meas_data(self, user_id, meas_cat_id, start_date, end_date):
+    def _get_meas_data(self, user_id, meas_cat_id, start_date, end_date, is_hourly):
         """Medidas corporales de una categoría concreta"""
+        group_col = self._get_grouping_col(Meas.date, is_hourly)
         result = self.session.query(
-            Meas.date.label('date'),
+            group_col.label('date_label'),
             Meas.val.label('val')
         ).filter(
             Meas.User_idUser == user_id,
             Meas.MeasCat_idMeasCat == meas_cat_id,
-            Meas.date >= str(start_date),
-            Meas.date <= str(end_date)
-        ).order_by(Meas.date).all()
-        return {
-            'labels': [str(r.date) for r in result],
-            'data': [float(r.val or 0) for r in result]
-        }
+            func.date(Meas.date) >= start_date,
+            func.date(Meas.date) <= end_date
+        ).order_by(group_col).all()
+
+        # Medidas no se agrupan promediando en SQL para mantener simplicidad,
+        # pero para graficar por hora sí se debería promediar o rellenar
+        # Lo manejaremos usando _format_result también si la db no explotó
+        return self._format_result(result, is_hourly, 'val', start_date)
+
+    def _format_result(self, result_rows, is_hourly, val_col, start_date):
+        """Aplica relleno de horas si es horario, o formatea a listas regulares"""
+        data_dict = {}
+        for r in result_rows:
+            key = str(r.date_label)
+            val = getattr(r, val_col)
+            if val is not None:
+                data_dict[key] = float(val)
+
+        if not is_hourly:
+            # Result normal
+            return {
+                'labels': sorted(data_dict.keys()),
+                'data': [data_dict[k] for k in sorted(data_dict.keys())]
+            }
+
+        # Rellenar 00:00 a 23:00 para la fecha start_date
+        labels = []
+        data = []
+        for i in range(24):
+            hour_str = f"{i:02d}:00"
+            labels.append(hour_str)
+            data.append(data_dict.get(hour_str, 0.0))
+            
+        return {'labels': labels, 'data': data}
 
     def calculate_correlation(self, user_id, metric1, metric2, days=30, start_date=None, end_date=None, all_time=False):
         """Calcula la correlación de Pearson entre dos métricas"""
