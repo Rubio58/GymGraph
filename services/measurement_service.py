@@ -55,6 +55,11 @@ class MeasurementService:
             meascat = self.repo.get_meascat_by_id(db, meascat_id)
             return meascat.unit   
         
+    def get_meascat_name(self, meascat_id: int) -> str:
+        with get_db() as db:
+            meascat = self.repo.get_meascat_by_id(db, meascat_id)
+            return meascat.name          
+        
     def delete_measurement(self, meas_id:int):
         with get_db() as db:
             try:

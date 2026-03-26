@@ -1,6 +1,7 @@
 # repositories/train_repository.py
+from datetime import datetime
 import string
-from models import Trainday, Trainplan, TraindayExercise, Exercise
+from models import Set, Trainday, Trainplan, TraindayExercise, Exercise
 from sqlalchemy.orm import Session
 
 class TrainRepository:
@@ -101,3 +102,15 @@ class TrainRepository:
     
     def get_traindayexercise_by_id(self, db: Session, traindayexercise_id: int):
         return db.query(TraindayExercise).filter(TraindayExercise.idTrainday_exercise == traindayexercise_id).first()
+    
+    def create_set(self, db: Session, user_id:int, exercise_id:int, weight:float, reps:int, date:datetime):
+        set=Set(
+            User_idUser=user_id,
+            Exercise_idExercise=exercise_id,
+            weight=weight,
+            reps=reps,
+            date=date
+        )
+        db.add(set)
+        db.flush()
+        return    

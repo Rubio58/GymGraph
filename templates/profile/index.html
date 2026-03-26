@@ -1,0 +1,140 @@
+<!-- templates/profile/index.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="profile-container" style="max-width: 800px; margin: 0 auto;">
+    
+    <h2 style="color: var(--terracotta); font-family: 'Playfair Display', serif; margin-bottom: 2rem;">Profile Settings</h2>
+    
+    <!-- Sección de nombre de usuario -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <h3 style="color: var(--terracotta); margin-bottom: 1.5rem;">User</h3>
+        
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+            <div>
+                <p style="font-size: 1.2rem; font-weight: 600; color: var(--text-primary);">{{ current_user.username }}</p>
+            </div>
+            <button onclick="document.getElementById('edit-name-form').style.display='block'" class="btn btn-secondary">
+                Edit username
+            </button>
+        </div>
+        
+        <div id="edit-name-form" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 2px solid var(--border-light);">
+            <form method="POST" action="{{ url_for('profile.update_username') }}">
+                <div class="form-group">
+                    <label>New username:</label>
+                    <input type="text" name="username" placeholder="Enter new username" required
+                           style="width: 100%; padding: 0.85rem; border: 2px solid var(--border-color); border-radius: var(--radius);">
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" onclick="document.getElementById('edit-name-form').style.display='none'" class="btn btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Sección de objetivos nutricionales -->
+    <div class="card">
+        <h3 style="color: var(--terracotta); margin-bottom: 1.5rem;">Macronutrient Targets</h3>
+        
+        {% if objectives.protein == 0 and objectives.carbs == 0 and objectives.fats == 0 %}
+            <!-- No hay objetivos, mostrar botón para añadir -->
+            <button onclick="document.getElementById('add-macro-form').style.display='block'" class="btn btn-primary" style="width: 100%;">
+                + Add macro targets
+            </button>
+            
+            <!-- Formulario para añadir objetivos (oculto inicialmente) -->
+            <div id="add-macro-form" style="display: none; margin-top: 1rem;">
+                <form method="POST" action="{{ url_for('profile.update_objectives') }}">
+                    <div class="form-group">
+                        <label>Protein (g):</label>
+                        <input type="number" name="protein" step="1" min="0" required
+                               style="width: 100%; padding: 0.85rem; border: 2px solid var(--border-color); border-radius: var(--radius);">
+                        <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Recommended: 1.6-2.2g per kg of body weight</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Carbohydrates (g):</label>
+                        <input type="number" name="carbs" step="1" min="0" required
+                               style="width: 100%; padding: 0.85rem; border: 2px solid var(--border-color); border-radius: var(--radius);">
+                        <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Recommended: 3-5g per kg of body weight</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Fats (g):</label>
+                        <input type="number" name="fats" step="1" min="0" required
+                               style="width: 100%; padding: 0.85rem; border: 2px solid var(--border-color); border-radius: var(--radius);">
+                        <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Recommended: 0.5-1.5g per kg of body weight</small>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="button" onclick="document.getElementById('add-macro-form').style.display='none'" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
+            
+        {% else %}
+            <!-- Mostrar objetivos actuales -->
+            <div style="background: var(--cream); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem;">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center; margin-bottom: 1.5rem;">
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem;">Protein</div>
+                        <div style="font-size: 1.75rem; font-weight: 700; color: var(--terracotta);">{{ objectives.protein }}g</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem;">Carbohydrates</div>
+                        <div style="font-size: 1.75rem; font-weight: 700; color: var(--terracotta);">{{ objectives.carbs }}g</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem;">Fats</div>
+                        <div style="font-size: 1.75rem; font-weight: 700; color: var(--terracotta);">{{ objectives.fats }}g</div>
+                    </div>
+                </div>
+                
+                <div style="background: var(--cream-dark); border-radius: var(--radius); padding: 1rem; text-align: center;">
+                    <span style="color: var(--text-secondary);">Total daily calories:</span>
+                    <span style="font-size: 1.5rem; font-weight: 700; color: var(--terracotta); margin-left: 0.5rem;">
+                        {{ (objectives.protein * 4) + (objectives.carbs * 4) + (objectives.fats * 9) }}
+                    </span>
+                    <span style="color: var(--text-muted);"> kcal</span>
+                </div>
+            </div>
+            
+            <button onclick="document.getElementById('edit-macro-form').style.display='block'" class="btn btn-secondary" style="width: 100%; margin-bottom: 1rem;">
+                Edit macro targets
+            </button>
+            
+            <!-- Formulario para editar objetivos (oculto inicialmente) -->
+            <div id="edit-macro-form" style="display: none;">
+                <form method="POST" action="{{ url_for('profile.update_objectives') }}">
+                    <div class="form-group">
+                        <label>Protein (g):</label>
+                        <input type="number" name="protein" step="1" min="0" value="{{ objectives.protein }}" required
+                               style="width: 100%; padding: 0.85rem; border: 2px solid var(--border-color); border-radius: var(--radius);">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Carbohydrates (g):</label>
+                        <input type="number" name="carbs" step="1" min="0" value="{{ objectives.carbs }}" required
+                               style="width: 100%; padding: 0.85rem; border: 2px solid var(--border-color); border-radius: var(--radius);">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Fats (g):</label>
+                        <input type="number" name="fats" step="1" min="0" value="{{ objectives.fats }}" required
+                               style="width: 100%; padding: 0.85rem; border: 2px solid var(--border-color); border-radius: var(--radius);">
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <button type="button" onclick="document.getElementById('edit-macro-form').style.display='none'" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+    
+</div>
+{% endblock %}

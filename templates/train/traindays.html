@@ -166,10 +166,13 @@
                     </div>
                 </div>
                 
-                <!-- Botón Workout (deshabilitado visualmente por ahora) -->
-                <button class="btn btn-secondary" style="margin-top: 1rem; width: 100%; opacity: 0.6; cursor: not-allowed;" disabled>
-                    Workout (coming soon)
-                </button>
+                    <form method="POST" action="{{ url_for('train.start_workout') }}" style="margin-top: 1rem; width: 100%;">
+                        <input type="hidden" name="trainday_id" value="{{ td.idTrainday }}">
+                        <button type="submit" class="btn btn-secondary" style="width: 100%;">
+                            Workout
+                        </button>
+                    </form>
+                    
             </div>
             {% endfor %}
             

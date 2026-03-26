@@ -24,14 +24,15 @@ def get_measurements(meascat_id):
     meas_service = MeasurementService()
     measurements= meas_service.get_measurements_by_cat(meascat_id, current_user.id)
     unit = meas_service.get_meascat_unit(meascat_id)
- 
+    category_name = meas_service.get_meascat_name(meascat_id)
    
     # Renderizar el template parcial 
     return render_template(
         'measurement/measurements.html',
         measurements=measurements,
         meascat_id=meascat_id,
-        unit=unit
+        unit=unit,
+        category_name=category_name
 
     )
 

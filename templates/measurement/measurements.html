@@ -17,8 +17,23 @@
                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-secondary); font-size: 0.9rem;">
                         Value ({{ unit }}):
                     </label>
-                    <input type="number" name="val" step="0.01" placeholder="e.g., 75.5" required
-                           style="width: 100%; padding: 0.85rem; border: 2px solid var(--border-color); border-radius: var(--radius); font-size: 1rem;">
+                    
+                    {% if category_name == 'Menstruation' %}
+                        <!-- Selector para Menstruation (1-5) -->
+                        <select name="val" required
+                                style="width: 100%; padding: 0.85rem; border: 2px solid var(--border-color); border-radius: var(--radius); font-size: 1rem; background: white;">
+                            <option value="" disabled selected>Select intensity level</option>
+                            <option value="1">1 - Very light</option>
+                            <option value="2">2 - Light</option>
+                            <option value="3">3 - Moderate</option>
+                            <option value="4">4 - Heavy</option>
+                            <option value="5">5 - Very heavy</option>
+                        </select>
+                    {% else %}
+                        <!-- Input numérico normal para otras categorías -->
+                        <input type="number" name="val" step="0.01" placeholder="e.g., 75.5" required
+                               style="width: 100%; padding: 0.85rem; border: 2px solid var(--border-color); border-radius: var(--radius); font-size: 1rem;">
+                    {% endif %}
                 </div>
                 <button type="submit" class="btn btn-primary" style="padding: 0.85rem 2rem;">
                     Add measurement
@@ -39,8 +54,21 @@
                 <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--cream); border-radius: var(--radius); border: 2px solid var(--border-light); transition: var(--transition);">
                     <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
                         <div style="display: flex; align-items: baseline; gap: 0.25rem;">
-                            <span style="font-size: 1.25rem; font-weight: 700; color: var(--terracotta);">{{ m.val }}</span>
-                            <span style="color: var(--text-muted); font-size: 0.9rem;">{{ unit }}</span>
+                            {% if category_name == 'Menstruation' %}
+                                <!-- Mostrar el valor como texto descriptivo para Menstruation -->
+                                <span style="font-size: 1.25rem; font-weight: 700; color: var(--terracotta);">
+                                    {% if m.val == 1 %}Very light
+                                    {% elif m.val == 2 %}Light
+                                    {% elif m.val == 3 %}Moderate
+                                    {% elif m.val == 4 %}Heavy
+                                    {% elif m.val == 5 %}Very heavy
+                                    {% else %}{{ m.val }}{% endif %}
+                                </span>
+                                <span style="color: var(--text-muted); font-size: 0.9rem;">({{ m.val }}/5)</span>
+                            {% else %}
+                                <span style="font-size: 1.25rem; font-weight: 700; color: var(--terracotta);">{{ m.val }}</span>
+                                <span style="color: var(--text-muted); font-size: 0.9rem;">{{ unit }}</span>
+                            {% endif %}
                         </div>
                         <span style="color: var(--text-secondary); font-size: 0.9rem; background: var(--beige); padding: 0.2rem 0.8rem; border-radius: 20px;">
                             {{ m.date }}

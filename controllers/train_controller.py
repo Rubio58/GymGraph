@@ -1,4 +1,5 @@
 # controllers/train_controller.py
+from datetime import datetime
 from flask import  render_template, request, redirect, url_for, flash, Blueprint
 from flask_login import login_required, current_user
 from services.train_service import TrainService
@@ -16,6 +17,20 @@ def index():
         'train/index.html',
         trainplans=trainplans,
     )
+
+@train_bp.route('/start-workout', methods=['POST'])
+@login_required
+def start_workout():
+    """Redirige a ventana workout"""
+    trainday_id = request.form.get('trainday_id')
+    train_service = TrainService()
+    exercises=train_service.get_traindayexercises_by_trainday(trainday_id)
+    
+    return render_template(
+        'train/workout.html',
+        exercises=exercises,
+    )
+
 @train_bp.route('/create-trainplan', methods=['POST'])
 @login_required
 def create_trainplan():
@@ -236,3 +251,60 @@ def move_traindayexercise(traindayexercise_id, direction, trainplan_id):
     else:
         flash(f'Error: {result.get("error")}', 'error')
         return get_traindays(trainplan_id)
+    
+@train_bp.route('/save-workout', methods=['POST'])
+@login_required
+def save_workout():
+    """Guardar los datos del workout completado"""
+    
+    # Obtener todos los exercise_ids del formulario
+    exercise_ids = request.form.getlist('exercise_ids')
+    
+    # Diccionario para almacenar los datos procesados
+    workout_data = []
+    
+    # Procesar cada ejercicio
+    for exercise_id in exercise_ids:
+        exercise_id = int(exercise_id)
+        
+        # Encontrar todas las series para este ejercicio
+        # Buscamos campos que empiecen con "reps_{exercise_id}_"
+        prefix = f"reps_{exercise_id}_"
+        set_indices = []
+        
+        for key in request.form.keys():
+            if key.startswith(prefix):
+                # Extraer el índice de la serie
+                set_index = int(key.split('_')[-1])
+                set_indices.append(set_index)
+        
+        # Ordenar los índices
+        set_indices.sort()
+        
+        # Procesar cada serie
+        for set_index in set_indices:
+            reps_key = f"reps_{exercise_id}_{set_index}"
+            weight_key = f"weight_{exercise_id}_{set_index}"
+            
+            reps = request.form.get(reps_key)
+            weight = request.form.get(weight_key)
+            
+            # Solo guardar si ambos campos están presentes
+            if reps and weight:
+                workout_data.append({
+                    'exercise_id': exercise_id,
+                    'reps': int(reps),
+                    'weight': float(weight),
+                    'date': datetime.now()
+                })
+    
+    # Guardar en la base de datos usando el servicio
+    train_service = TrainService()
+    result = train_service.save_workout(workout_data, current_user.id)
+    
+    if result.get('success'):
+        flash('Workout guardado exitosamente!', 'success')
+        return redirect(url_for('train.index'))
+    else:
+        flash(f'Error al guardar el workout: {result.get("error")}', 'error')
+        return redirect(url_for('train.index'))    

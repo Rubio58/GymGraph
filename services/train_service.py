@@ -68,7 +68,8 @@ class TrainService:
                     'notes': tde.notes,
                     'order': tde.order,  
                     'exercise_name': exercise.name,
-                    'musclegroup': exercise.musclegroup
+                    'musclegroup': exercise.musclegroup,
+                    'idExercise' : exercise.idExercise
                 })
             # Ordenar la lista por el campo 'order'
             trainday_exercises_list.sort(key=lambda x: x['order'])
@@ -252,5 +253,34 @@ class TrainService:
                 
             except Exception as e:
                 db.rollback()
-                return {'success': False, 'error': str(e)}    
+                return {'success': False, 'error': str(e)}   
+
+    def save_workout(self, workout_data, user_id):
+        
+        """    
+        Args:
+            workout_data: Lista de diccionarios con exercise_id, set_number, reps, weight, date
+            user_id: ID del usuario
+        
+        Returns:
+            dict: {'success': bool, 'error': str (opcional)}
+        """
+        with get_db() as db:
+            try:
+                
+                
+                # Verificar que hay datos para guardar
+                if not workout_data:
+                    return {'success': False, 'error': 'No hay datos para guardar'}
+                
+                # Guardar cada serie
+                for data in workout_data:
+                    self.repo.create_set(db,user_id,data['exercise_id'],data['weight'],data['reps'],date=data['date'])
+                
+                db.commit()
+                return {'success': True}
+            
+            except Exception as e:
+                db.rollback()
+                return {'success': False, 'error': str(e)}             
         
