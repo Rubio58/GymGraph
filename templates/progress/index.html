@@ -1,0 +1,41 @@
+<!-- templates/progress/index.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="exercise-container" style="display: flex; gap: 2rem;">
+    <!-- Columna izquierda - Ejercicios -->
+    <div class="exercises-sidebar" style="width: 320px; padding: 1.5rem; background: var(--cream-dark); border-radius: var(--radius-lg); border: 2px solid var(--border-light);">
+        <h3 style="margin-top: 0; color: var(--charcoal); font-family: 'Playfair Display', serif; margin-bottom: 1.5rem;">Exercises</h3>
+        
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {% for ex in exercises %}
+            <div style="background: white; padding: 1rem; border-radius: var(--radius); border: 2px solid var(--border-light); box-shadow: var(--shadow-sm);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <strong style="color: var(--text-primary); font-size: 1.05rem;">{{ ex.name }}</strong>
+                    <span style="background: var(--beige); color: var(--text-secondary); padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">{{ ex.musclegroup }}</span>
+                </div>
+                <button 
+                    class="btn btn-primary"
+                    style="width: 100%; padding: 0.5rem; font-size: 0.9rem;"
+                    hx-get="{{ url_for('progress.get_sets', exercise_id=ex.idExercise) }}"
+                    hx-target="#exercise-container"
+                    hx-trigger="click"
+                    hx-swap="innerHTML">
+                    View history
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Columna derecha - Sets -->
+    <div style="flex: 1;">
+        <div id="exercise-container">
+            <div class="card" style="padding: 3rem; text-align: center;">
+                <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 1rem;">Select an exercise</p>
+                <p style="color: var(--text-secondary);">Choose an exercise to view its history</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

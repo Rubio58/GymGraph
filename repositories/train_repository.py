@@ -114,3 +114,6 @@ class TrainRepository:
         db.add(set)
         db.flush()
         return    
+    
+    def get_sets_by_exercise(self, db: Session, exercise_id:int):
+        return db.query(Set).filter(Set.Exercise_idExercise == exercise_id).all()

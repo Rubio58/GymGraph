@@ -2,7 +2,7 @@
 <div class="measurement-detail">
     <!-- Formulario para añadir medición -->
     <div class="card" style="margin-bottom: 2rem;">
-        <h3 style="margin-top: 0; color: var(--terracotta); font-family: 'Playfair Display', serif; margin-bottom: 1.25rem;">Add new measurement</h3>
+        <h3 style="margin-top: 0; color: var(--charcoal); font-family: 'Playfair Display', serif; margin-bottom: 1.25rem;">Add new measurement</h3>
         
         <form method="POST" 
               action="{{ url_for('measurement.create_measurement') }}"
@@ -44,7 +44,7 @@
 
     <!-- Lista de mediciones -->
     <div class="card">
-        <h3 style="margin-top: 0; color: var(--terracotta); font-family: 'Playfair Display', serif; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+        <h3 style="margin-top: 0; color: var(--charcoal); font-family: 'Playfair Display', serif; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
             <span>History</span>
         </h3>
         
@@ -56,7 +56,7 @@
                         <div style="display: flex; align-items: baseline; gap: 0.25rem;">
                             {% if category_name == 'Menstruation' %}
                                 <!-- Mostrar el valor como texto descriptivo para Menstruation -->
-                                <span style="font-size: 1.25rem; font-weight: 700; color: var(--terracotta);">
+                                <span style="font-size: 1.25rem; font-weight: 700; color: var(--charcoal);">
                                     {% if m.val == 1 %}Very light
                                     {% elif m.val == 2 %}Light
                                     {% elif m.val == 3 %}Moderate
@@ -66,7 +66,7 @@
                                 </span>
                                 <span style="color: var(--text-muted); font-size: 0.9rem;">({{ m.val }}/5)</span>
                             {% else %}
-                                <span style="font-size: 1.25rem; font-weight: 700; color: var(--terracotta);">{{ m.val }}</span>
+                                <span style="font-size: 1.25rem; font-weight: 700; color: var(--charcoal);">{{ m.val }}</span>
                                 <span style="color: var(--text-muted); font-size: 0.9rem;">{{ unit }}</span>
                             {% endif %}
                         </div>

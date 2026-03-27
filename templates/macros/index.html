@@ -268,32 +268,32 @@
     {% endif %}
     
     <!-- TOTALES DEL DÍA -->
-    {% if meals %}
+   
     <div class="card" style="background: linear-gradient(135deg, var(--gg-blue) 0%, var(--brick) 100%); color: white; margin-top: 2rem; border: none;">
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; text-align: center;">
             <div>
                 <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.25rem;">Calories</div>
-                <div style="font-size: 1.75rem; font-weight: 700; font-family: 'Playfair Display', serif;">{{ "%.0f"|format(totals.kcal) }}</div>
+                <div style="font-size: 1.75rem; font-weight: 700; font-family: 'Playfair Display', serif;">{{ "%.0f"|format(totals.kcal) }}/{{ (objectives.protein * 4) + (objectives.carbs * 4) + (objectives.fats * 9) }}</div>
                 <div style="font-size: 0.8rem; opacity: 0.8;">kcal</div>
             </div>
             <div>
                 <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.25rem;">Protein</div>
-                <div style="font-size: 1.75rem; font-weight: 700; font-family: 'Playfair Display', serif;">{{ "%.1f"|format(totals.protein) }}</div>
+                <div style="font-size: 1.75rem; font-weight: 700; font-family: 'Playfair Display', serif;">{{ "%.1f"|format(totals.protein) }}/{{objectives.protein}}</div>
                 <div style="font-size: 0.8rem; opacity: 0.8;">g</div>
             </div>
             <div>
                 <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.25rem;">Carbs</div>
-                <div style="font-size: 1.75rem; font-weight: 700; font-family: 'Playfair Display', serif;">{{ "%.1f"|format(totals.carbs) }}</div>
+                <div style="font-size: 1.75rem; font-weight: 700; font-family: 'Playfair Display', serif;">{{ "%.1f"|format(totals.carbs) }}/{{objectives.carbs}}</div>
                 <div style="font-size: 0.8rem; opacity: 0.8;">g</div>
             </div>
             <div>
                 <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.25rem;">Fats</div>
-                <div style="font-size: 1.75rem; font-weight: 700; font-family: 'Playfair Display', serif;">{{ "%.1f"|format(totals.fats) }}</div>
+                <div style="font-size: 1.75rem; font-weight: 700; font-family: 'Playfair Display', serif;">{{ "%.1f"|format(totals.fats) }}/{{objectives.fats}}</div>
                 <div style="font-size: 0.8rem; opacity: 0.8;">g</div>
             </div>
         </div>
     </div>
-    {% endif %}
+   
     
 </div>
 

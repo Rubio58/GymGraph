@@ -55,6 +55,21 @@ class TrainService:
                 })
         return traindays_list
     
+    def get_sets_by_exercise(self, exercise_id:int) -> List[Dict]:
+        
+        with get_db() as db:
+            exercises = self.repo.get_sets_by_exercise(db, exercise_id)
+            exercises_list=[]
+            for ex in exercises:
+                exercises_list.append({
+                    'idSet': ex.idSet,
+                    'date': ex.date,
+                    'weight': ex.weight,
+                    'reps': ex.reps
+                })
+            exercises_list.sort(key=lambda x: x['date'], reverse=True)    
+        return exercises_list   
+    
     def get_traindayexercises_by_trainday(self, trainday_id:int) -> List[Dict]:
         with get_db() as db:
             trainday_exercises = self.repo.get_traindayexercises_by_trainday(db, trainday_id)

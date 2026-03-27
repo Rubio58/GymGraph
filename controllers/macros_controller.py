@@ -5,6 +5,8 @@ from services.food_service import FoodService
 from services.macros_service import MacrosService
 from datetime import datetime, timedelta
 
+from services.user_service import UserService
+
 macros_bp = Blueprint('macros', __name__, url_prefix='/macros')
 
 @macros_bp.route('/')
@@ -13,6 +15,7 @@ def index():
     """Página principal de macros"""
     food_service = FoodService()
     macros_service = MacrosService()
+    user_service = UserService()
     
     # Obtener fecha de la query string o usar hoy
     date_str = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
@@ -38,7 +41,7 @@ def index():
     foods = food_service.get_user_foods(current_user.id)
     meals = macros_service.get_meals_by_date(current_user.id, current_date)  # ← Ahora pasamos datetime
     totals = macros_service.get_daily_totals(current_user.id, current_date)   # ← Ahora pasamos datetime
-    
+    objectives = user_service.get_objectives_by_user(current_user.id)
     return render_template(
         'macros/index.html',
         foods=foods,
@@ -48,7 +51,8 @@ def index():
         prev_date=prev_date,
         next_date=next_date,
         can_go_next=can_go_next,
-        today=today_str
+        today=today_str,
+        objectives = objectives
     )
 
   

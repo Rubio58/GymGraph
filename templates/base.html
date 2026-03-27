@@ -17,7 +17,7 @@
 </head>
 <body>
     <!-- Navegación -->
-    <nav class="navbar">
+    <nav class="navbar" >
         <div class="nav-brand">
             <a href="{{ url_for('auth.dashboard') if current_user.is_authenticated else url_for('auth.login') }}">
                  GymGraph
@@ -30,6 +30,7 @@
                 <a href="{{ url_for('auth.dashboard') }}">Dashboard</a>
                 <a href="{{ url_for('macros.index') }}">Macros</a>
                 <a href="{{ url_for('train.index') }}">Training Plan</a>
+                <a href="{{ url_for('progress.index') }}">Progress</a>
                 <a href="{{ url_for('measurement.index') }}">Measurements</a>
                 <a href="{{ url_for('profile.index') }}">Profile</a>
                 <a href="{{ url_for('auth.logout') }}">Logout</a>
@@ -40,7 +41,7 @@
         </div>
     </nav>
     
-    <!-- Mensajes Flash -->
+    <!-- Mensajes Flash 
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     <div class="flash-messages">
@@ -53,7 +54,7 @@
     </div>
     {% endif %}
     {% endwith %}
-
+    -->
     <!-- Contenido principal -->
     <main class="container">
         {% block content %}{% endblock %}

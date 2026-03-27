@@ -193,7 +193,7 @@ class Trainday(Base):
         Index('idTrainday_UNIQUE', 'idTrainday', unique=True)
     )
 
-    idTrainday: Mapped[int] = mapped_column(Integer, primary_key=True)
+    idTrainday: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(45), nullable=False)
     Trainplan_idTrainplan: Mapped[int] = mapped_column(Integer, primary_key=True)
     Trainplan_User_idUser: Mapped[int] = mapped_column(Integer, primary_key=True)
