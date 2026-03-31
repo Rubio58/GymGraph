@@ -25,7 +25,7 @@ def seed():
         if row:
             uid_old = row[0]
             # Borrar en orden de dependencias
-            conn.execute(text(f"DELETE s FROM `Set` s JOIN `Trainday_exercise` te ON s.Trainday_exercise_idTrainday_exercise = te.idTrainday_exercise JOIN `Trainday` td ON te.Trainday_idTrainday = td.idTrainday JOIN `Trainplan` tp ON td.Trainplan_idTrainplan = tp.idTrainplan WHERE tp.User_idUser = {uid_old}"))
+            conn.execute(text(f"DELETE FROM `Set` WHERE User_idUser = {uid_old}"))
             conn.execute(text(f"DELETE te FROM `Trainday_exercise` te JOIN `Trainday` td ON te.Trainday_idTrainday = td.idTrainday JOIN `Trainplan` tp ON td.Trainplan_idTrainplan = tp.idTrainplan WHERE tp.User_idUser = {uid_old}"))
             conn.execute(text(f"DELETE td FROM `Trainday` td JOIN `Trainplan` tp ON td.Trainplan_idTrainplan = tp.idTrainplan WHERE tp.User_idUser = {uid_old}"))
             conn.execute(text(f"DELETE FROM `Trainplan` WHERE User_idUser = {uid_old}"))
@@ -45,7 +45,7 @@ def seed():
         conn.execute(text(f"INSERT INTO Objective (idObjective, Protein, Carbs, Fats, User_idUser) VALUES (1, 160, 300, 70, {uid})"))
 
         # ── Categorías de medidas ─────────────────────────────────────────────
-        for cat_id, name, unit in [(1, 'Peso corporal', 'kg'), (2, 'Grasa corporal', '%'), (3, 'Cintura', 'cm')]:
+        for cat_id, name, unit in [(1, 'Body Weight', 'kg'), (2, 'Body Fat', '%'), (3, 'Waist', 'cm')]:
             exists = conn.execute(text(f"SELECT 1 FROM MeasCat WHERE idMeasCat = {cat_id}")).fetchone()
             if not exists:
                 conn.execute(text(f"INSERT INTO MeasCat (idMeasCat, name, unit) VALUES ({cat_id}, '{name}', '{unit}')"))
@@ -156,8 +156,8 @@ def seed():
                         reps = random.randint(4, 10) if ex_id == 5 else random.randint(6, 12)
                         dt_str = datetime.combine(current_date, datetime.min.time()).strftime('%Y-%m-%d %H:%M:%S')
                         conn.execute(text(
-                            f"INSERT INTO `Set` (idSet, weight, reps, date, Trainday_exercise_idTrainday_exercise) "
-                            f"VALUES ({set_id}, {weight_val}, {reps}, '{dt_str}', {tde_id})"
+                            f"INSERT INTO `Set` (idSet, weight, reps, date, Exercise_idExercise, User_idUser) "
+                            f"VALUES ({set_id}, {weight_val}, {reps}, '{dt_str}', {ex_id}, {uid})"
                         ))
                         set_id += 1
 

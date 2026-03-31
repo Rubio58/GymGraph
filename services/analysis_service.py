@@ -117,14 +117,8 @@ class AnalysisService:
         result = self.session.query(
             group_col.label('date_label'),
             func.avg(Set.weight).label('avg_weight')
-        ).join(
-            TraindayExercise, Set.Trainday_exercise_idTrainday_exercise == TraindayExercise.idTrainday_exercise
-        ).join(
-            Trainday, TraindayExercise.Trainday_idTrainday == Trainday.idTrainday
-        ).join(
-            Trainplan, Trainday.Trainplan_idTrainplan == Trainplan.idTrainplan
         ).filter(
-            Trainplan.User_idUser == user_id,
+            Set.User_idUser == user_id,
             func.date(Set.date) >= start_date,
             func.date(Set.date) <= end_date
         ).group_by(
@@ -141,14 +135,8 @@ class AnalysisService:
         result = self.session.query(
             group_col.label('date_label'),
             func.sum(Set.weight * Set.reps).label('total_volume')
-        ).join(
-            TraindayExercise, Set.Trainday_exercise_idTrainday_exercise == TraindayExercise.idTrainday_exercise
-        ).join(
-            Trainday, TraindayExercise.Trainday_idTrainday == Trainday.idTrainday
-        ).join(
-            Trainplan, Trainday.Trainplan_idTrainplan == Trainplan.idTrainplan
         ).filter(
-            Trainplan.User_idUser == user_id,
+            Set.User_idUser == user_id,
             func.date(Set.date) >= start_date,
             func.date(Set.date) <= end_date
         ).group_by(
@@ -165,14 +153,8 @@ class AnalysisService:
         result = self.session.query(
             group_col.label('date_label'),
             func.count(Set.idSet).label('total_sets')
-        ).join(
-            TraindayExercise, Set.Trainday_exercise_idTrainday_exercise == TraindayExercise.idTrainday_exercise
-        ).join(
-            Trainday, TraindayExercise.Trainday_idTrainday == Trainday.idTrainday
-        ).join(
-            Trainplan, Trainday.Trainplan_idTrainplan == Trainplan.idTrainplan
         ).filter(
-            Trainplan.User_idUser == user_id,
+            Set.User_idUser == user_id,
             func.date(Set.date) >= start_date,
             func.date(Set.date) <= end_date
         ).group_by(
@@ -189,14 +171,8 @@ class AnalysisService:
         result = self.session.query(
             group_col.label('date_label'),
             func.avg(Set.reps).label('avg_reps')
-        ).join(
-            TraindayExercise, Set.Trainday_exercise_idTrainday_exercise == TraindayExercise.idTrainday_exercise
-        ).join(
-            Trainday, TraindayExercise.Trainday_idTrainday == Trainday.idTrainday
-        ).join(
-            Trainplan, Trainday.Trainplan_idTrainplan == Trainplan.idTrainplan
         ).filter(
-            Trainplan.User_idUser == user_id,
+            Set.User_idUser == user_id,
             func.date(Set.date) >= start_date,
             func.date(Set.date) <= end_date
         ).group_by(
@@ -230,15 +206,9 @@ class AnalysisService:
         group_col = self._get_grouping_col(Set.date, is_hourly)
         result = self.session.query(
             group_col.label('date_label'),
-            func.count(func.distinct(TraindayExercise.Trainday_idTrainday)).label('workout_count')
-        ).join(
-            TraindayExercise, Set.Trainday_exercise_idTrainday_exercise == TraindayExercise.idTrainday_exercise
+            func.count(func.distinct(func.date(Set.date))).label('workout_count')
         ).filter(
-            TraindayExercise.Trainday_idTrainday.in_(
-                self.session.query(Trainday.idTrainday).join(
-                    Trainplan, Trainday.Trainplan_idTrainplan == Trainplan.idTrainplan
-                ).filter(Trainplan.User_idUser == user_id)
-            ),
+            Set.User_idUser == user_id,
             func.date(Set.date) >= start_date,
             func.date(Set.date) <= end_date
         ).group_by(
@@ -255,13 +225,9 @@ class AnalysisService:
         meal_min = self.session.query(func.min(Meal.date)).filter(Meal.User_idUser == user_id).scalar()
         if meal_min:
             candidates.append(date.fromisoformat(str(meal_min)[:10]))
-        set_min = self.session.query(func.min(func.date(Set.date))).join(
-            TraindayExercise, Set.Trainday_exercise_idTrainday_exercise == TraindayExercise.idTrainday_exercise
-        ).join(
-            Trainday, TraindayExercise.Trainday_idTrainday == Trainday.idTrainday
-        ).join(
-            Trainplan, Trainday.Trainplan_idTrainplan == Trainplan.idTrainplan
-        ).filter(Trainplan.User_idUser == user_id).scalar()
+        set_min = self.session.query(func.min(func.date(Set.date))).filter(
+            Set.User_idUser == user_id
+        ).scalar()
         if set_min:
             candidates.append(set_min if isinstance(set_min, date) else date.fromisoformat(str(set_min)[:10]))
         meas_min = self.session.query(func.min(Meas.date)).filter(Meas.User_idUser == user_id).scalar()
@@ -380,25 +346,25 @@ class AnalysisService:
         abs_r = abs(r)
 
         if abs_r >= 0.9:
-            strength = "muy fuerte"
+            strength = "very strong"
         elif abs_r >= 0.7:
-            strength = "fuerte"
+            strength = "strong"
         elif abs_r >= 0.5:
-            strength = "moderada"
+            strength = "moderate"
         elif abs_r >= 0.3:
-            strength = "débil"
+            strength = "weak"
         else:
-            strength = "muy débil o inexistente"
+            strength = "very weak or non-existent"
 
         if r > 0:
-            direction = "positiva"
-            explanation = "Cuando una aumenta, la otra tiende a aumentar"
+            direction = "positive"
+            explanation = "When one increases, the other tends to increase"
         elif r < 0:
-            direction = "negativa"
-            explanation = "Cuando una aumenta, la otra tiende a disminuir"
+            direction = "negative"
+            explanation = "When one increases, the other tends to decrease"
         else:
-            direction = "nula"
-            explanation = "No hay relación lineal aparente"
+            direction = "none"
+            explanation = "No linear relationship apparent"
 
         return {
             'strength': strength,
@@ -410,16 +376,12 @@ class AnalysisService:
     def get_available_metrics(self, user_id=None):
         """Retorna la lista de métricas disponibles. Si se pasa user_id incluye medidas corporales del usuario."""
         metrics = [
-            {'id': 'calories', 'name': 'Calorías', 'category': 'Nutrición', 'unit': 'kcal'},
-            {'id': 'protein', 'name': 'Proteína', 'category': 'Nutrición', 'unit': 'g'},
-            {'id': 'carbs', 'name': 'Carbohidratos', 'category': 'Nutrición', 'unit': 'g'},
-            {'id': 'fats', 'name': 'Grasas', 'category': 'Nutrición', 'unit': 'g'},
-            {'id': 'weight_avg', 'name': 'Peso promedio levantado', 'category': 'Entrenamiento', 'unit': 'kg'},
-            {'id': 'volume', 'name': 'Volumen total', 'category': 'Entrenamiento', 'unit': 'kg'},
-            {'id': 'sets', 'name': 'Series totales', 'category': 'Entrenamiento', 'unit': ''},
-            {'id': 'reps_avg', 'name': 'Repeticiones promedio', 'category': 'Entrenamiento', 'unit': ''},
-            {'id': 'meals_count', 'name': 'Nº de comidas', 'category': 'Nutrición', 'unit': ''},
-            {'id': 'workouts_count', 'name': 'Nº de entrenamientos', 'category': 'Entrenamiento', 'unit': ''},
+            {'id': 'calories', 'name': 'Calories', 'category': 'Nutrition', 'unit': 'kcal'},
+            {'id': 'protein', 'name': 'Protein', 'category': 'Nutrition', 'unit': 'g'},
+            {'id': 'carbs', 'name': 'Carbs', 'category': 'Nutrition', 'unit': 'g'},
+            {'id': 'fats', 'name': 'Fats', 'category': 'Nutrition', 'unit': 'g'},
+            {'id': 'weight_avg', 'name': 'Avg Weight Lifted', 'category': 'Training', 'unit': 'kg'},
+            {'id': 'volume', 'name': 'Total Volume', 'category': 'Training', 'unit': 'kg'},
         ]
         if user_id:
             cats = self.session.query(MeasCat).join(
@@ -429,7 +391,7 @@ class AnalysisService:
                 metrics.append({
                     'id': f'meas_{cat.idMeasCat}',
                     'name': cat.name,
-                    'category': 'Medidas',
+                    'category': 'Measurements',
                     'unit': cat.unit
                 })
         return metrics

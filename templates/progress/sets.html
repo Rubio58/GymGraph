@@ -1,29 +1,170 @@
 <!-- templates/progress/sets.html -->
-<div class="sets-detail">
+<div class="sets-detail" style="display: flex; flex-direction: column; gap: 1.5rem; animation: fadeIn 0.4s ease-out;">
+
+    {% if sets and sets|length > 0 %}
+    <!-- Gráficas de Progreso -->
+    <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+        <!-- Gráfica de Peso -->
+        <div class="card" style="padding: 1.5rem; border: 1px solid var(--border-light); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h4 style="margin: 0; color: var(--terracotta); font-family: 'Playfair Display', serif; font-size: 1.25rem;">Weight Progression</h4>
+                <span style="font-size: 1rem; color: var(--text-secondary);"><i class="fas fa-weight-hanging"></i></span>
+            </div>
+            <div style="position: relative; height: 260px; width: 100%;">
+                <canvas id="weightChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Gráfica de Repeticiones -->
+        <div class="card" style="padding: 1.5rem; border: 1px solid var(--border-light); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h4 style="margin: 0; color: #5B8DB8; font-family: 'Playfair Display', serif; font-size: 1.25rem;">Reps Progression</h4>
+                <span style="font-size: 1rem; color: var(--text-secondary);"><i class="fas fa-redo"></i></span>
+            </div>
+            <div style="position: relative; height: 260px; width: 100%;">
+                <canvas id="repsChart"></canvas>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Lista de mediciones -->
-    <div class="card">
-        <h3 style="margin-top: 0; color: var(--charcoal); font-family: 'Playfair Display', serif; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
-            <span>History</span>
+    <div class="card" style="padding: 1.5rem; border: 1px solid var(--border-light); box-shadow: var(--shadow-sm);">
+        <h3 style="margin-top: 0; color: var(--charcoal); font-family: 'Playfair Display', serif; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;">
+            <span>History Log</span>
+            <span style="font-size: 0.9rem; color: var(--text-secondary); font-family: 'Inter', sans-serif;">{{ sets|length }} sets</span>
         </h3>
         
         {% if sets and sets|length > 0 %}
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <div style="display: flex; flex-direction: column; gap: 0.65rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem; scrollbar-width: thin; scrollbar-color: var(--border) transparent;">
                 {% for s in sets %}
-                <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--cream); border-radius: var(--radius); border: 2px solid var(--border-light); transition: var(--transition);">
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.25rem; background: var(--cream); border-radius: var(--radius); border: 1px solid var(--border-light); transition: all 0.2s ease;">
                     <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-                        <div style="display: flex; align-items: baseline; gap: 0.25rem;">
-                                <span style="font-size: 1.25rem; font-weight: 700; color: var(--charcoal);">{{ s.weight }}kg x {{ s.reps }} reps</span>
+                        <div style="display: flex; align-items: baseline; gap: 0.35rem;">
+                                <span style="font-size: 1.15rem; font-weight: 700; color: var(--charcoal); font-family: 'Nunito', sans-serif;">{{ s.weight }}<span style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;">kg</span> x {{ s.reps }} <span style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;">reps</span></span>
                         </div>
-                        <span style="color: var(--text-secondary); font-size: 0.9rem; background: var(--beige); padding: 0.2rem 0.8rem; border-radius: 20px;">
-                            {{ s.date }}
-                        </span>
                     </div>
+                    <span style="color: var(--text-secondary); font-size: 0.85rem; background: var(--beige); padding: 0.3rem 0.85rem; border-radius: 20px; font-family: 'Nunito', sans-serif; font-weight: 600;">
+                        {{ s.date }}
+                    </span>
                 </div>
                 {% endfor %}
             </div>
+            
+            <script>
+                (function() {
+                    const rawData = [
+                        {% for s in sets %}
+                            { 
+                                date: "{{ s.date }}", 
+                                weight: {{ s.weight }}, 
+                                reps: {{ s.reps }} 
+                            }{% if not loop.last %},{% endif %}
+                        {% endfor %}
+                    ];
+                    
+                    if (rawData.length === 0) return;
+                    const chartData = rawData.slice().reverse();
+                    
+                    const labels = chartData.map(d => {
+                        const dt = new Date(d.date);
+                        return !isNaN(dt) ? dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : d.date;
+                    });
+                    
+                    const weights = chartData.map(d => d.weight);
+                    const reps = chartData.map(d => d.reps);
+                    
+                    const commonOptions = {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 1000,
+                            easing: 'easeOutQuart'
+                        },
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#1e1812',
+                                titleFont: { family: "'Nunito', sans-serif", size: 13, weight: '700' },
+                                bodyFont: { family: "'Nunito', sans-serif", size: 12 },
+                                padding: 12,
+                                cornerRadius: 8,
+                                displayColors: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false, drawBorder: false },
+                                ticks: { font: { family: "'Nunito', sans-serif", size: 11 }, color: '#999', padding: 6 },
+                            },
+                            y: {
+                                grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+                                ticks: { font: { family: "'Nunito', sans-serif", size: 11 }, color: '#999', padding: 8 },
+                                beginAtZero: false
+                            }
+                        }
+                    };
+
+                    const wCtx = document.getElementById('weightChart');
+                    if (wCtx) {
+                        new Chart(wCtx.getContext('2d'), {
+                            type: 'line',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Weight (kg)',
+                                    data: weights,
+                                    borderColor: '#C67B5C',
+                                    backgroundColor: 'rgba(198,123,92,0.1)',
+                                    borderWidth: 3,
+                                    pointBackgroundColor: '#C67B5C',
+                                    pointBorderColor: '#fff',
+                                    pointBorderWidth: 2,
+                                    pointRadius: 4,
+                                    pointHoverRadius: 6,
+                                    fill: true,
+                                    tension: 0.4
+                                }]
+                            },
+                            options: commonOptions
+                        });
+                    }
+
+                    const rCtx = document.getElementById('repsChart');
+                    if (rCtx) {
+                        new Chart(rCtx.getContext('2d'), {
+                            type: 'line',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Reps',
+                                    data: reps,
+                                    borderColor: '#5B8DB8', 
+                                    backgroundColor: 'rgba(91,141,184,0.1)',
+                                    borderWidth: 3,
+                                    pointBackgroundColor: '#5B8DB8',
+                                    pointBorderColor: '#fff',
+                                    pointBorderWidth: 2,
+                                    pointRadius: 4,
+                                    pointHoverRadius: 6,
+                                    fill: true,
+                                    tension: 0.4
+                                }]
+                            },
+                            options: commonOptions
+                        });
+                    }
+                })();
+            </script>
         {% else %}
-            <div style="padding: 2rem; text-align: center; background: var(--cream); border-radius: var(--radius);">
-                <p style="color: var(--text-muted); margin-bottom: 0.5rem;">No sets yet</p>
+            <div style="padding: 3rem 2rem; text-align: center; background: var(--cream); border-radius: var(--radius); border: 2px dashed var(--border-light);">
+                <span style="font-size: 2rem; color: var(--border-light); margin-bottom: 1rem; display: block;"><i class="fas fa-dumbbell"></i></span>
+                <p style="color: var(--text-muted); font-size: 1.1rem; font-family: 'Nunito', sans-serif;">No history recorded yet.</p>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">Log some sets to start seeing your progress!</p>
             </div>
         {% endif %}
     </div>

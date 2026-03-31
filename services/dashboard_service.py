@@ -53,15 +53,9 @@ class DashboardService:
                        e.name AS exercise,
                        MAX(s.weight) AS max_weight
                 FROM `Set` s
-                JOIN Trainday_exercise te
-                  ON s.Trainday_exercise_idTrainday_exercise = te.idTrainday_exercise
-                JOIN Trainday td
-                  ON te.Trainday_idTrainday = td.idTrainday
-                JOIN Trainplan tp
-                  ON td.Trainplan_idTrainplan = tp.idTrainplan
                 JOIN Exercise e
-                  ON te.Exercise_idExercise = e.idExercise
-                WHERE tp.User_idUser = :user_id
+                  ON s.Exercise_idExercise = e.idExercise
+                WHERE s.User_idUser = :user_id
                 GROUP BY DATE(s.date), e.name
                 ORDER BY dia
             """)
@@ -114,13 +108,7 @@ class DashboardService:
                 SELECT DATE(s.date) AS dia,
                        SUM(s.weight * s.reps) AS volumen
                 FROM `Set` s
-                JOIN Trainday_exercise te
-                  ON s.Trainday_exercise_idTrainday_exercise = te.idTrainday_exercise
-                JOIN Trainday td
-                  ON te.Trainday_idTrainday = td.idTrainday
-                JOIN Trainplan tp
-                  ON td.Trainplan_idTrainplan = tp.idTrainplan
-                WHERE tp.User_idUser = :user_id
+                WHERE s.User_idUser = :user_id
                 GROUP BY DATE(s.date)
                 ORDER BY dia
             """)
@@ -173,16 +161,10 @@ class DashboardService:
         with get_db() as db:
             query = text("""
                 SELECT DATE(s.date) AS dia,
-                       COUNT(DISTINCT te.Exercise_idExercise) AS exercises,
+                       COUNT(DISTINCT s.Exercise_idExercise) AS exercises,
                        COUNT(*) AS total_sets
                 FROM `Set` s
-                JOIN Trainday_exercise te
-                  ON s.Trainday_exercise_idTrainday_exercise = te.idTrainday_exercise
-                JOIN Trainday td
-                  ON te.Trainday_idTrainday = td.idTrainday
-                JOIN Trainplan tp
-                  ON td.Trainplan_idTrainplan = tp.idTrainplan
-                WHERE tp.User_idUser = :user_id
+                WHERE s.User_idUser = :user_id
                 GROUP BY DATE(s.date)
                 ORDER BY dia DESC
                 LIMIT 1
