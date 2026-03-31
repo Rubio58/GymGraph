@@ -7,23 +7,23 @@
     
     <form method="POST" action="{{ url_for('train.save_workout') }}" id="workout-form">
         {% for ex in exercises %}
-            <div class="exercise-container card" data-exercise-id="{{ ex.idTrainday_exercise }}" style="margin-bottom: 2rem; padding: 1.5rem;">
+            <div class="exercise-container card" data-exercise-id="{{ ex.idExercise }}" style="margin-bottom: 2rem; padding: 1.5rem;">
                 <h3 style="color: var(--terracotta); margin-top: 0; margin-bottom: 1.25rem; font-family: 'Playfair Display', serif;">{{ ex.exercise_name }}</h3>
-                <input type="hidden" name="exercise_ids" value="{{ ex.idTrainday_exercise }}">
+                <input type="hidden" name="exercise_ids" value="{{ ex.idExercise }}">
                 
                 <div class="sets-container" style="margin-bottom: 1.25rem;">
                     {% for i in range(ex.numSets) %}
                         <div class="set-row" style="margin-bottom: 1rem; padding: 0.75rem; background: var(--cream); border-radius: var(--radius); border: 2px solid var(--border-light);">
                             <label style="display: inline-block; min-width: 60px; font-weight: 600; color: var(--text-secondary);">Set {{ i + 1 }}:</label>
                             <input type="number" 
-                                   name="reps_{{ ex.idTrainday_exercise }}_{{ i }}" 
+                                   name="reps_{{ ex.idExercise }}_{{ i }}" 
                                    placeholder="Reps" 
                                    step="1" 
                                    min="0"
                                    required
                                    style="width: 100px; padding: 0.5rem; margin-right: 0.5rem; border: 2px solid var(--border-color); border-radius: var(--radius);">
                             <input type="number" 
-                                   name="weight_{{ ex.idTrainday_exercise }}_{{ i }}" 
+                                   name="weight_{{ ex.idExercise }}_{{ i }}" 
                                    placeholder="Weight (kg)" 
                                    min="0"
                                    required
