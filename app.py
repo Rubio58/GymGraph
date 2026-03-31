@@ -6,12 +6,16 @@ from flask_login import LoginManager
 from controllers import CurrentUser
 from database import get_db
 
-# Cargar variables de entorno
+# Cargar variables de entorno desde .env
 load_dotenv()
 
 # Crear la app
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'clave-super-secreta')
+
+# Configuración desde variables de entorno
+app.secret_key = os.environ['SECRET_KEY']
+app.config['ENV'] = os.environ.get('FLASK_ENV', 'development')
+app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
 
 # Configurar Flask-Login
 login_manager = LoginManager()
@@ -50,5 +54,11 @@ app.register_blueprint(dashboard_bp)
 from controllers.analysis_controller import analysis_bp
 app.register_blueprint(analysis_bp)
 
+from controllers.profile_controller import profile_bp
+app.register_blueprint(profile_bp)
+
+from controllers.progress_controller import progress_bp
+app.register_blueprint(progress_bp)
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=app.config['DEBUG'])
