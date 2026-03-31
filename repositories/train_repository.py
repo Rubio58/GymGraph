@@ -103,9 +103,10 @@ class TrainRepository:
     def get_traindayexercise_by_id(self, db: Session, traindayexercise_id: int):
         return db.query(TraindayExercise).filter(TraindayExercise.idTrainday_exercise == traindayexercise_id).first()
     
-    def create_set(self, db: Session, traindayexercise_id:int, weight:float, reps:int, date:datetime):
+    def create_set(self, db: Session, user_id:int, exercise_id:int, weight:float, reps:int, date:datetime):
         set=Set(
-            Trainday_exercise_idTrainday_exercise=traindayexercise_id,
+            User_idUser=user_id,
+            Exercise_idExercise=exercise_id,
             weight=weight,
             reps=reps,
             date=date

@@ -290,7 +290,7 @@ class TrainService:
                 
                 # Guardar cada serie
                 for data in workout_data:
-                    self.repo.create_set(db,data['traindayexercise_id'],data['weight'],data['reps'],date=data['date'])
+                    self.repo.create_set(db,user_id,data['exercise_id'],data['weight'],data['reps'],date=data['date'])
                 
                 db.commit()
                 return {'success': True}
