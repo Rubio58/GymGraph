@@ -42,6 +42,7 @@ class MeasurementService:
         with get_db() as db:
             try:
                 self.repo.create_measurement(db,val,date,meascat_id,user_id)
+                db.commit()
                 return {
                     'success': True
                 }

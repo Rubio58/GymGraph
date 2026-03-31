@@ -12,7 +12,12 @@ class MeasurementRepository:
         return db.query(Meas).filter(Meas.MeasCat_idMeasCat == meascat_id, Meas.User_idUser==user_id).all()
     
     def create_measurement(self, db:Session, val:float, date:datetime, meascat_id:int, user_id:int):
+        from sqlalchemy import func
+        max_id = db.query(func.max(Meas.idMeas)).scalar()
+        next_id = 1 if max_id is None else max_id + 1
+
         meas=Meas(
+            idMeas=next_id,
             val=val,
             date=date,
             MeasCat_idMeasCat=meascat_id,

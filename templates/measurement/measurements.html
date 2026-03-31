@@ -42,6 +42,14 @@
         </form>
     </div>
 
+    <!-- Gráfica de mediciones -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <h3 style="margin-top: 0; color: var(--charcoal); font-family: 'Playfair Display', serif; margin-bottom: 1.25rem;">Progress</h3>
+        <div style="height: 250px; position: relative;">
+            <canvas id="measurementChart"></canvas>
+        </div>
+    </div>
+
     <!-- Lista de mediciones -->
     <div class="card">
         <h3 style="margin-top: 0; color: var(--charcoal); font-family: 'Playfair Display', serif; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
@@ -101,3 +109,93 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+function initMeasurementChart() {
+    // Si ya existe la gráfica de mediciones, destruirla para evitar solapamientos en HTMX
+    if (window.measurementLineChart) {
+        window.measurementLineChart.destroy();
+    }
+
+    const canvas = document.getElementById('measurementChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    // Las variables chart_labels y chart_data vienen como strings JSON válidos desde el controlador
+    const labels = {{ chart_labels|safe }};
+    const data = {{ chart_data|safe }};
+
+    window.measurementLineChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '{{ category_name }}',
+                data: data,
+                borderColor: '#C67B5C',
+                backgroundColor: 'rgba(198,123,92,0.15)',
+                borderWidth: 2.5,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#C67B5C',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointHoverRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 500, easing: 'easeOutQuart' },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1e1812',
+                    titleFont: { family: "'Nunito', sans-serif", size: 12, weight: '700' },
+                    bodyFont: { family: "'Nunito', sans-serif", size: 11 },
+                    padding: 10,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function(context) {
+                            return context.parsed.y + ' {{ unit }}';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    grid: { color: '#f5f0ea', drawBorder: false },
+                    ticks: {
+                        font: { family: "'Nunito', sans-serif", size: 11 },
+                        color: '#aaa',
+                        padding: 8,
+                    },
+                    border: { display: false }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        font: { family: "'Nunito', sans-serif", size: 11 },
+                        color: '#aaa',
+                        maxRotation: 0,
+                        padding: 6,
+                    },
+                    border: { display: false }
+                }
+            }
+        }
+    });
+}
+
+// Cargar Chart.js de forma dinámica si no está presente, y luego inicializar la gráfica
+if (typeof Chart === 'undefined') {
+    const script = document.createElement('script');
+    script.src = "https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js";
+    script.onload = initMeasurementChart;
+    document.head.appendChild(script);
+} else {
+    initMeasurementChart();
+}
+</script>
