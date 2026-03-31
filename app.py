@@ -59,6 +59,5 @@ app.register_blueprint(profile_bp)
 
 from controllers.progress_controller import progress_bp
 app.register_blueprint(progress_bp)
-
 if __name__ == '__main__':
     app.run(debug=app.config['DEBUG'])

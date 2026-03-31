@@ -42,7 +42,7 @@ def seed():
         uid = conn.execute(text("SELECT LAST_INSERT_ID()")).scalar()
 
         # ── Objetivo ─────────────────────────────────────────────────────────
-        conn.execute(text(f"INSERT INTO Objective (Protein, Carbs, Fats, User_idUser) VALUES (160, 300, 70, {uid})"))
+        conn.execute(text(f"INSERT INTO Objective (idObjective, Protein, Carbs, Fats, User_idUser) VALUES (1, 160, 300, 70, {uid})"))
 
         # ── Categorías de medidas ─────────────────────────────────────────────
         for cat_id, name, unit in [(1, 'Peso corporal', 'kg'), (2, 'Grasa corporal', '%'), (3, 'Cintura', 'cm')]:
@@ -92,11 +92,11 @@ def seed():
         ]
         tde_map = {}  # (td_id, ex_id) -> idTrainday_exercise
         for td_id, td_name, exs in days_cfg:
-            conn.execute(text(f"INSERT INTO Trainday (idTrainday, name, Trainplan_idTrainplan) VALUES ({td_id}, '{td_name}', 1)"))
+            conn.execute(text(f"INSERT INTO Trainday (idTrainday, name, Trainplan_idTrainplan, Trainplan_User_idUser) VALUES ({td_id}, '{td_name}', 1, {uid})"))
             for ex_id, order in exs:
                 conn.execute(text(
-                    f"INSERT INTO Trainday_exercise (Exercise_idExercise, Trainday_idTrainday, numSets, notes) "
-                    f"VALUES ({ex_id}, {td_id}, 3, NULL)"
+                    f"INSERT INTO Trainday_exercise (Exercise_idExercise, Trainday_idTrainday, Trainday_Trainplan_idTrainplan, Trainday_Trainplan_User_idUser, numSets, `order`, notes) "
+                    f"VALUES ({ex_id}, {td_id}, 1, {uid}, 3, {order}, NULL)"
                 ))
                 tde_id = conn.execute(text("SELECT LAST_INSERT_ID()")).scalar()
                 tde_map[(td_id, ex_id)] = tde_id
@@ -127,7 +127,7 @@ def seed():
                 conn.execute(text(f"INSERT INTO Meal (idMeal, date, User_idUser) VALUES ({meal_id}, '{date_str}', {uid})"))
                 for food_id, base_g in [(1, 150), (2, 200), (3, 50)]:
                     g = round(base_g * cf + random.gauss(0, 15), 1)
-                    conn.execute(text(f"INSERT INTO Meal_Food (idMeal_Food, grams, Food_idFood, Meal_idMeal) VALUES ({mf_id}, {g}, {food_id}, {meal_id})"))
+                    conn.execute(text(f"INSERT INTO Meal_Food (idMeal_Food, grams, Food_idFood, Meal_idMeal, Meal_User_idUser) VALUES ({mf_id}, {g}, {food_id}, {meal_id}, {uid})"))
                     mf_id += 1
                 meal_id += 1
 
@@ -135,7 +135,7 @@ def seed():
                 conn.execute(text(f"INSERT INTO Meal (idMeal, date, User_idUser) VALUES ({meal_id}, '{date_str}', {uid})"))
                 for food_id, base_g in [(5, 120), (10, 180), (7, 100)]:
                     g = round(base_g * cf + random.gauss(0, 12), 1)
-                    conn.execute(text(f"INSERT INTO Meal_Food (idMeal_Food, grams, Food_idFood, Meal_idMeal) VALUES ({mf_id}, {g}, {food_id}, {meal_id})"))
+                    conn.execute(text(f"INSERT INTO Meal_Food (idMeal_Food, grams, Food_idFood, Meal_idMeal, Meal_User_idUser) VALUES ({mf_id}, {g}, {food_id}, {meal_id}, {uid})"))
                     mf_id += 1
                 meal_id += 1
 

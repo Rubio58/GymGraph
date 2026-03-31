@@ -19,7 +19,6 @@ class Exercise(Base):
     name: Mapped[str] = mapped_column(String(45), nullable=False)
     musclegroup: Mapped[str] = mapped_column(String(45), nullable=False)
 
-    Set: Mapped[list['Set']] = relationship('Set', back_populates='Exercise_')
     Trainday_exercise: Mapped[list['TraindayExercise']] = relationship('TraindayExercise', back_populates='Exercise_')
 
 
@@ -51,7 +50,7 @@ class User(Base):
     Meal: Mapped[list['Meal']] = relationship('Meal', back_populates='User_')
     Meas: Mapped[list['Meas']] = relationship('Meas', back_populates='User_')
     Objective: Mapped[list['Objective']] = relationship('Objective', back_populates='User_')
-    Set: Mapped[list['Set']] = relationship('Set', back_populates='User_')
+
     Trainplan: Mapped[list['Trainplan']] = relationship('Trainplan', back_populates='User_')
 
 
@@ -131,22 +130,18 @@ class Objective(Base):
 class Set(Base):
     __tablename__ = 'Set'
     __table_args__ = (
-        ForeignKeyConstraint(['Exercise_idExercise'], ['Exercise.idExercise'], name='fk_Set_Exercise1'),
-        ForeignKeyConstraint(['User_idUser'], ['User.idUser'], name='fk_Set_User1'),
-        Index('fk_Set_Exercise1_idx', 'Exercise_idExercise'),
-        Index('fk_Set_User1_idx', 'User_idUser'),
-        Index('idSet_UNIQUE', 'idSet', unique=True)
+        ForeignKeyConstraint(['Trainday_exercise_idTrainday_exercise'], ['Trainday_exercise.idTrainday_exercise'], name='fk_Set_Trainday_exercise1'),
+        Index('fk_Set_Trainday_exercise1_idx', 'Trainday_exercise_idTrainday_exercise'),
+        Index('idSet_UNIQUE', 'idSet', unique=True),
     )
 
     idSet: Mapped[int] = mapped_column(Integer, primary_key=True)
     weight: Mapped[decimal.Decimal] = mapped_column(DECIMAL(5, 2), nullable=False)
     reps: Mapped[int] = mapped_column(Integer, nullable=False)
     date: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
-    Exercise_idExercise: Mapped[int] = mapped_column(Integer, primary_key=True)
-    User_idUser: Mapped[int] = mapped_column(Integer, primary_key=True)
+    Trainday_exercise_idTrainday_exercise: Mapped[int] = mapped_column(Integer, primary_key=True)
 
-    Exercise_: Mapped['Exercise'] = relationship('Exercise', back_populates='Set')
-    User_: Mapped['User'] = relationship('User', back_populates='Set')
+    Trainday_exercise_: Mapped['TraindayExercise'] = relationship('TraindayExercise', back_populates='Set')
 
 
 class Trainplan(Base):
@@ -223,3 +218,4 @@ class TraindayExercise(Base):
 
     Exercise_: Mapped['Exercise'] = relationship('Exercise', back_populates='Trainday_exercise')
     Trainday_: Mapped['Trainday'] = relationship('Trainday', back_populates='Trainday_exercise')
+    Set: Mapped[list['Set']] = relationship('Set', back_populates='Trainday_exercise_')

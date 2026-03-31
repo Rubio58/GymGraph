@@ -257,19 +257,18 @@ def move_traindayexercise(traindayexercise_id, direction, trainplan_id):
 def save_workout():
     """Guardar los datos del workout completado"""
     
-    # Obtener todos los exercise_ids del formulario
+    # Obtener todos los exercise_ids del formulario (actually traindayexercise IDs)
     exercise_ids = request.form.getlist('exercise_ids')
     
     # Diccionario para almacenar los datos procesados
     workout_data = []
     
     # Procesar cada ejercicio
-    for exercise_id in exercise_ids:
-        exercise_id = int(exercise_id)
+    for tde_id in exercise_ids:
+        tde_id = int(tde_id)
         
         # Encontrar todas las series para este ejercicio
-        # Buscamos campos que empiecen con "reps_{exercise_id}_"
-        prefix = f"reps_{exercise_id}_"
+        prefix = f"reps_{tde_id}_"
         set_indices = []
         
         for key in request.form.keys():
@@ -283,8 +282,8 @@ def save_workout():
         
         # Procesar cada serie
         for set_index in set_indices:
-            reps_key = f"reps_{exercise_id}_{set_index}"
-            weight_key = f"weight_{exercise_id}_{set_index}"
+            reps_key = f"reps_{tde_id}_{set_index}"
+            weight_key = f"weight_{tde_id}_{set_index}"
             
             reps = request.form.get(reps_key)
             weight = request.form.get(weight_key)
@@ -292,7 +291,7 @@ def save_workout():
             # Solo guardar si ambos campos están presentes
             if reps and weight:
                 workout_data.append({
-                    'exercise_id': exercise_id,
+                    'traindayexercise_id': tde_id,
                     'reps': int(reps),
                     'weight': float(weight),
                     'date': datetime.now()

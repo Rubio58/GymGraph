@@ -64,5 +64,3 @@ htmlcov/
 # OS
 Thumbs.db
 .DS_Store
-__pycache__/
-*.pyc
