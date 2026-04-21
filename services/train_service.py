@@ -55,10 +55,10 @@ class TrainService:
                 })
         return traindays_list
     
-    def get_sets_by_exercise(self, exercise_id:int) -> List[Dict]:
+    def get_sets_by_exercise(self, user_id:int, exercise_id:int) -> List[Dict]:
         
         with get_db() as db:
-            exercises = self.repo.get_sets_by_exercise(db, exercise_id)
+            exercises = self.repo.get_sets_by_exercise(db, user_id, exercise_id)
             exercises_list=[]
             for ex in exercises:
                 exercises_list.append({

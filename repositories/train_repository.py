@@ -115,5 +115,5 @@ class TrainRepository:
         db.flush()
         return    
     
-    def get_sets_by_exercise(self, db: Session, exercise_id:int):
-        return db.query(Set).filter(Set.Exercise_idExercise == exercise_id).all()
+    def get_sets_by_exercise(self, db: Session, user_id:int, exercise_id:int):
+        return db.query(Set).filter(Set.Exercise_idExercise == exercise_id, Set.User_idUser == user_id).all()

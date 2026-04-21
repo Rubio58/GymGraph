@@ -1,6 +1,6 @@
 # controllers/measurement_controller.py
 from flask import  render_template, Blueprint
-from flask_login import login_required
+from flask_login import login_required, current_user
 from services.train_service import TrainService
 
 progress_bp = Blueprint('progress', __name__, url_prefix='/progress')
@@ -21,7 +21,7 @@ def index():
 @login_required
 def get_sets(exercise_id):
     train_service = TrainService()
-    sets= train_service.get_sets_by_exercise(exercise_id)
+    sets= train_service.get_sets_by_exercise(current_user.id, exercise_id)
    
     # Renderizar el template parcial 
     return render_template(
