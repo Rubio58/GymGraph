@@ -119,7 +119,7 @@ class Objective(Base):
         Index('idObjective_UNIQUE', 'idObjective', unique=True)
     )
 
-    idObjective: Mapped[int] = mapped_column(Integer, primary_key=True)
+    idObjective: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     protein: Mapped[int] = mapped_column(Integer, nullable=False)
     carbs: Mapped[int] = mapped_column(Integer, nullable=False)
     fats: Mapped[int] = mapped_column(Integer, nullable=False)
