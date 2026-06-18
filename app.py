@@ -5,6 +5,8 @@ from flask import Flask
 from flask_login import LoginManager
 from controllers import CurrentUser
 from database import get_db
+from sqlalchemy.orm import declarative_base
+from database import engine
 
 # Cargar variables de entorno desde .env
 load_dotenv()
@@ -30,6 +32,17 @@ def load_user(user_id):
     with get_db() as db:
         user = repo.get_by_id(db, int(user_id))
         return CurrentUser(user) if user else None
+    
+Base = declarative_base()
+
+@app.before_request
+def create_tables_once():
+    """Crea las tablas si no existen - solo se ejecuta una vez"""
+    if not getattr(app, '_tables_created', False):
+        import models  # Asegura que los modelos estén cargados
+        Base.metadata.create_all(bind=engine, checkfirst=True)
+        app._tables_created = True
+        print("✅ Tablas verificadas/creadas en Aiven")    
    
 
 # Registrar blueprints (controladores)
