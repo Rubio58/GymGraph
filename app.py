@@ -16,6 +16,10 @@ load_dotenv()
 # Crear la app
 app = Flask(__name__)
 
+# ⚠️ TEMPORAL: Forzar DEBUG para ver errores
+app.config['DEBUG'] = True
+app.config['ENV'] = 'development'
+
 # Configurar logging para producción
 if os.environ.get('FLASK_ENV') == 'production':
     # Loggear a stdout (Render lo captura)
