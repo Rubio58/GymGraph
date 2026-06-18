@@ -20,6 +20,10 @@ if not DATABASE_URL:
     print("❌ Error: DATABASE_URL no está configurada en variables de entorno")
     sys.exit(1)
 
+# Corregir SSL para Aiven
+if 'ssl-mode' in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.replace('ssl-mode', 'ssl_ca')    
+
 def create_user(session):
     """Crear usuario de prueba"""
     

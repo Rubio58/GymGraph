@@ -16,6 +16,10 @@ if not DATABASE_URL:
     print("❌ Error: DATABASE_URL no está configurada en variables de entorno")
     sys.exit(1)
 
+if not DATABASE_URL:
+    print("❌ Error: DATABASE_URL no está configurada en variables de entorno")
+    sys.exit(1)
+    
 def populate_exercises(session):
     """Rellena la tabla Exercise con los ejercicios proporcionados"""
     
