@@ -44,19 +44,7 @@ def load_user(user_id):
     repo = UserRepository()
     with get_db() as db:
         user = repo.get_by_id(db, int(user_id))
-        return CurrentUser(user) if user else None
-    
-Base = declarative_base()
-
-@app.before_request
-def create_tables_once():
-    """Crea las tablas si no existen - solo se ejecuta una vez"""
-    if not getattr(app, '_tables_created', False):
-        import models  # Asegura que los modelos estén cargados
-        Base.metadata.create_all(bind=engine, checkfirst=True)
-        app._tables_created = True
-        print("✅ Tablas verificadas/creadas en Aiven")    
-   
+        return CurrentUser(user) if user else None  
 
 # Registrar blueprints (controladores)
 from controllers.auth_controller import auth_bp
@@ -85,5 +73,16 @@ app.register_blueprint(profile_bp)
 
 from controllers.progress_controller import progress_bp
 app.register_blueprint(progress_bp)
+
+# ======= CREAR TABLAS AL INICIAR =======
+from models import Base
+
+with app.app_context():
+    try:
+        Base.metadata.create_all(bind=engine)
+        app.logger.info("✅ Tablas creadas/verificadas en Aiven")
+    except Exception as e:
+        app.logger.error(f"❌ Error creando tablas: {e}")
+        
 if __name__ == '__main__':
     app.run(debug=app.config['DEBUG'], host='0.0.0.0', port=5000)
