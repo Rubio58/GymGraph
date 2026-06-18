@@ -7,12 +7,25 @@ from controllers import CurrentUser
 from database import get_db
 from sqlalchemy.orm import declarative_base
 from database import engine
+import logging
+import sys
 
 # Cargar variables de entorno desde .env
 load_dotenv()
 
 # Crear la app
 app = Flask(__name__)
+
+# Configurar logging para producción
+if os.environ.get('FLASK_ENV') == 'production':
+    # Loggear a stdout (Render lo captura)
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(logging.DEBUG)
+    app.logger.addHandler(handler)
+    app.logger.setLevel(logging.DEBUG)
+    
+    # También loggear errores de SQLAlchemy
+    logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 # Configuración desde variables de entorno
 app.secret_key = os.environ['SECRET_KEY']
