@@ -1,16 +1,27 @@
-#database.py
+# database.py
 import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
 
-# Cargar variables de entorno
+# Cargar variables de entorno (solo útil en local)
 load_dotenv()
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
-engine = create_engine(DATABASE_URL,echo=True,)
+# Validación para detectar errores rápido
+if not DATABASE_URL:
+    raise ValueError("❌ DATABASE_URL no está configurada en las variables de entorno")
+
+# Si la URL viene de Aiven con ssl-mode, corregirla automáticamente
+if 'ssl-mode' in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.replace('ssl-mode', 'ssl_ca')
+    print("⚠️  Corregido 'ssl-mode' → 'ssl_ca' en DATABASE_URL")
+
+print(f"🔗 Conectando a: {DATABASE_URL.split('@')[1].split('/')[0]}")  # Muestra host sin contraseña
+
+engine = create_engine(DATABASE_URL, echo=True)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -20,11 +31,10 @@ def get_db():
     db = SessionLocal()
     try:
         yield db
-        db.commit()  # Auto-commit si todo OK
+        db.commit()
     except Exception as e:
-        db.rollback()  # Auto-rollback si error
-        print(f"Error en BD: {e}")
+        db.rollback()
+        print(f"❌ Error en BD: {e}")
         raise
     finally:
-        db.close()  # Auto-close SIEMPRE
-
+        db.close()
