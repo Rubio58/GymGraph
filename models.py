@@ -63,7 +63,7 @@ class Food(Base):
         Index('idFood_UNIQUE', 'idFood', unique=True)
     )
 
-    idFood: Mapped[int] = mapped_column(Integer, primary_key=True)
+    idFood: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(45), nullable=False)
     protein_p100: Mapped[decimal.Decimal] = mapped_column(DECIMAL(5, 2), nullable=False)
     carbs_p100: Mapped[decimal.Decimal] = mapped_column(DECIMAL(5, 2), nullable=False)
