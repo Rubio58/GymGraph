@@ -138,7 +138,7 @@ class Set(Base):
         Index('idSet_UNIQUE', 'idSet', unique=True)
     )
 
-    idSet: Mapped[int] = mapped_column(Integer, primary_key=True)
+    idSet: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     weight: Mapped[decimal.Decimal] = mapped_column(DECIMAL(5, 2), nullable=False)
     reps: Mapped[int] = mapped_column(Integer, nullable=False)
     date: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
