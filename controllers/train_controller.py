@@ -308,3 +308,17 @@ def save_workout():
     else:
         flash(f'Error al guardar el workout: {result.get("error")}', 'error')
         return redirect(url_for('train.index'))    
+    
+@train_bp.route('/keep-alive')
+def keep_alive():
+    """Endpoint para mantener activa la BD de Aiven y el servicio de Render"""
+    try:
+        train_service = TrainService()
+        exercises = train_service.get_exercises()
+        return {
+            "status": "ok",
+            "exercises_count": len(exercises),
+            "timestamp": datetime.now().isoformat()
+        }, 200
+    except Exception as e:
+        return {"status": "error", "message": str(e)}, 500    
