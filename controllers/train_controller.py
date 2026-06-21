@@ -318,7 +318,6 @@ def keep_alive():
         return {
             "status": "ok",
             "exercises_count": len(exercises),
-            "timestamp": datetime.now().isoformat()
         }, 200
     except Exception as e:
         return {"status": "error", "message": str(e)}, 500    
