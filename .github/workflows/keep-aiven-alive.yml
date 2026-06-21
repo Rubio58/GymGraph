@@ -2,8 +2,8 @@ name: Keep Aiven Database Alive
 
 on:
   schedule:
-    - cron: '0 * * * *'
-  workflow_dispatch:
+    - cron: '0 * * * *'  # Cada hora en el minuto 0
+  workflow_dispatch:      # Para ejecución manual
 
 jobs:
   ping-database:
@@ -23,13 +23,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install pymysql cryptography
 
-      - name: Test DNS resolution
-        run: |
-          echo "Testing DNS resolution..."
-          nslookup mysql-gymgraph-andresrubio581-f3b7.i.aivencloud.com || true
-          echo "Testing connectivity..."
-          timeout 5 bash -c "echo > /dev/tcp/mysql-gymgraph-andresrubio581-f3b7.i.aivencloud.com/17736" 2>/dev/null && echo "Port 17736 is reachable" || echo "Port 17736 might be blocked"
-
       - name: Ping Aiven MySQL Database
         env:
           DATABASE_URL: ${{ secrets.AIVEN_DATABASE_URL }}
@@ -37,42 +30,15 @@ jobs:
           python -c "
           import pymysql
           import os
-          import sys
-          from urllib.parse import urlparse, parse_qs, unquote
+          from urllib.parse import urlparse, parse_qs
           from datetime import datetime
           
           try:
-              # Obtener y limpiar la URL
-              raw_url = os.environ['DATABASE_URL']
-              print(f'Raw URL format: mysql+pymysql://user:password@host:port/database?ssl_ca=ca.pem')
-              print(f'URL length: {len(raw_url)} characters')
+              url = urlparse(os.environ['DATABASE_URL'])
+              query_params = parse_qs(url.query)
               
-              # Parsear la URL
-              url = urlparse(raw_url)
+              print(f'Connecting to {url.hostname}:{url.port}...')
               
-              # Extraer componentes con limpieza
-              host = url.hostname
-              port = url.port or 3306
-              user = url.username
-              password = unquote(url.password) if url.password else ''
-              database = url.path.lstrip('/')
-              
-              print(f'Parsed connection details:')
-              print(f'  Host: {host}')
-              print(f'  Port: {port}')
-              print(f'  User: {user}')
-              print(f'  Database: {database}')
-              print(f'  Password length: {len(password)}')
-              
-              # Intentar resolver DNS desde Python
-              import socket
-              try:
-                  ip = socket.gethostbyname(host)
-                  print(f'  DNS resolved: {host} -> {ip}')
-              except Exception as dns_error:
-                  print(f'  DNS resolution failed: {dns_error}')
-              
-              # Configurar SSL
               ssl_config = {
                   'ssl': {
                       'ca': 'ca.pem',
@@ -80,37 +46,31 @@ jobs:
                   }
               }
               
-              print('Attempting connection...')
-              
-              # Intentar conectar con timeout extendido
               conn = pymysql.connect(
-                  host=host,
-                  port=port,
-                  user=user,
-                  password=password,
-                  database=database,
+                  host=url.hostname,
+                  port=url.port or 3306,
+                  user=url.username,
+                  password=url.password,
+                  database=url.path.lstrip('/'),
                   ssl=ssl_config,
-                  connect_timeout=30,  # Aumentado a 30 segundos
-                  read_timeout=30,
-                  write_timeout=30
+                  connect_timeout=10
               )
               
               cur = conn.cursor()
-              cur.execute('SELECT 1 AS keep_alive_check, NOW() AS current_time;')
+              
+              # Ping simple - solo SELECT 1 es suficiente
+              cur.execute('SELECT 1 AS keep_alive_check, NOW() AS `current_time`;')
               result = cur.fetchone()
               
               print(f'✅ Database ping successful at {result[1]}')
-              print(f'   Connection established to {host}')
+              print(f'   Host: {url.hostname}')
+              print(f'   Database: {url.path.lstrip(\"/\")}')
               
               cur.close()
               conn.close()
               
-          except pymysql.OperationalError as e:
-              print(f'❌ Connection error: {e}')
-              print(f'   Error code: {e.args[0] if e.args else \"unknown\"}')
-              sys.exit(1)
           except Exception as e:
-              print(f'❌ Unexpected error: {e}')
+              print(f'❌ Database ping failed: {e}')
               print(f'   Error type: {type(e).__name__}')
-              sys.exit(1)
+              exit(1)
           "
