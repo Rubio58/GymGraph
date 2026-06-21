@@ -1,0 +1,80 @@
+name: Keep Aiven Database Alive
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Cada hora en el minuto 0
+  workflow_dispatch:      # Para ejecución manual
+
+jobs:
+  ping-database:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pymysql cryptography
+
+      - name: Ping Aiven MySQL Database
+        env:
+          # Esta URL es idéntica a la que usas en Render
+          DATABASE_URL: ${{ secrets.AIVEN_DATABASE_URL }}
+        run: |
+          python -c "
+          import pymysql
+          import os
+          from urllib.parse import urlparse, parse_qs
+          from datetime import datetime
+          
+          try:
+              # Parsear la URL (igual que en Render)
+              url = urlparse(os.environ['DATABASE_URL'])
+              query_params = parse_qs(url.query)
+              
+              print(f'Connecting to {url.hostname}:{url.port}...')
+              
+              # Configurar SSL usando ca.pem del repositorio
+              ssl_config = {
+                  'ssl': {
+                      'ca': 'ca.pem',
+                      'check_hostname': True
+                  }
+              }
+              
+              # Conectar
+              conn = pymysql.connect(
+                  host=url.hostname,
+                  port=url.port or 3306,
+                  user=url.username,
+                  password=url.password,
+                  database=url.path.lstrip('/'),
+                  ssl=ssl_config,
+                  connect_timeout=10
+              )
+              
+              cur = conn.cursor()
+              
+              # Ping a la base de datos
+              cur.execute('SELECT 1 AS keep_alive_check, NOW() AS current_time;')
+              result = cur.fetchone()
+              
+              print(f'✅ Database ping successful at {result[1]}')
+              print(f'   Host: {url.hostname}')
+              print(f'   Database: {url.path.lstrip(\"/\")}')
+              
+              cur.close()
+              conn.close()
+              
+          except Exception as e:
+              print(f'❌ Database ping failed: {e}')
+              print(f'   Error type: {type(e).__name__}')
+              exit(1)
+          "
