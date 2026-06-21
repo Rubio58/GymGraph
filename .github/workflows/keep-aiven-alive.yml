@@ -27,15 +27,14 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.AIVEN_DATABASE_URL }}
         run: |
-          python -c "
+          python << 'PYEOF'
           import pymysql
           import os
-          from urllib.parse import urlparse, parse_qs
+          from urllib.parse import urlparse
           from datetime import datetime
           
           try:
               url = urlparse(os.environ['DATABASE_URL'])
-              query_params = parse_qs(url.query)
               
               print(f'Connecting to {url.hostname}:{url.port}...')
               
@@ -58,16 +57,28 @@ jobs:
               
               cur = conn.cursor()
               
-              # Ping simple - solo SELECT 1 es suficiente
-              cur.execute('SELECT 1 AS keep_alive_check, NOW() AS `current_time`;')
-              result = cur.fetchone()
+              # Consultar tabla Exercise
+              cur.execute("SELECT idExercise, name, musclegroup FROM Exercise LIMIT 5")
+              exercises = cur.fetchall()
               
-              print(f'✅ Database ping successful at {result[1]}')
+              print(f'✅ Database ping successful at {datetime.now()}')
               print(f'   Host: {url.hostname}')
-              print(f'   Database: {url.path.lstrip(\"/\")}')
+              print(f'   Database: {url.path.lstrip("/")}')
+              print(f'   Exercises found: {len(exercises)}')
+              
+              if exercises:
+                  print('   Sample exercises:')
+                  for ex in exercises:
+                      print(f'     - {ex[1]} ({ex[2]})')
               
               cur.close()
               conn.close()
+              
+          except Exception as e:
+              print(f'❌ Database ping failed: {e}')
+              print(f'   Error type: {type(e).__name__}')
+              exit(1)
+          PYEOF
               
           except Exception as e:
               print(f'❌ Database ping failed: {e}')
