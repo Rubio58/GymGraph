@@ -38,20 +38,13 @@ jobs:
               
               print(f'Connecting to {url.hostname}:{url.port}...')
               
-              ssl_config = {
-                  'ssl': {
-                      'ca': 'ca.pem',
-                      'check_hostname': True
-                  }
-              }
-              
               conn = pymysql.connect(
                   host=url.hostname,
                   port=url.port or 3306,
                   user=url.username,
                   password=url.password,
                   database=url.path.lstrip('/'),
-                  ssl=ssl_config,
+                  ssl={'ssl': {'ca': 'ca.pem', 'check_hostname': True}},
                   connect_timeout=10
               )
               
@@ -71,17 +64,17 @@ jobs:
                   for ex in exercises:
                       print(f'     - {ex[1]} ({ex[2]})')
               
+              # Contar total de ejercicios
+              cur.execute("SELECT COUNT(*) FROM Exercise")
+              total = cur.fetchone()[0]
+              print(f'   Total exercises in DB: {total}')
+              
               cur.close()
               conn.close()
               
-          except Exception as e:
-              print(f'❌ Database ping failed: {e}')
-              print(f'   Error type: {type(e).__name__}')
-              exit(1)
-          PYEOF
+              print('✅ Keep-alive ping completed successfully')
               
           except Exception as e:
               print(f'❌ Database ping failed: {e}')
-              print(f'   Error type: {type(e).__name__}')
               exit(1)
-          "
+          PYEOF
