@@ -1,0 +1,80 @@
+name: Keep Aiven Database Alive
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # Cada 5 mins
+  workflow_dispatch:      # Para ejecución manual
+
+jobs:
+  ping-database:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pymysql cryptography
+
+      - name: Ping Aiven MySQL Database
+        env:
+          DATABASE_URL: ${{ secrets.AIVEN_DATABASE_URL }}
+        run: |
+          python << 'PYEOF'
+          import pymysql
+          import os
+          from urllib.parse import urlparse
+          from datetime import datetime
+          
+          try:
+              url = urlparse(os.environ['DATABASE_URL'])
+              
+              print(f'Connecting to {url.hostname}:{url.port}...')
+              
+              conn = pymysql.connect(
+                  host=url.hostname,
+                  port=url.port or 3306,
+                  user=url.username,
+                  password=url.password,
+                  database=url.path.lstrip('/'),
+                  ssl={'ssl': {'ca': 'ca.pem', 'check_hostname': True}},
+                  connect_timeout=10
+              )
+              
+              cur = conn.cursor()
+              
+              # Consultar tabla Exercise
+              cur.execute("SELECT idExercise, name, musclegroup FROM Exercise LIMIT 5")
+              exercises = cur.fetchall()
+              
+              print(f'✅ Database ping successful at {datetime.now()}')
+              print(f'   Host: {url.hostname}')
+              print(f'   Database: {url.path.lstrip("/")}')
+              print(f'   Exercises found: {len(exercises)}')
+              
+              if exercises:
+                  print('   Sample exercises:')
+                  for ex in exercises:
+                      print(f'     - {ex[1]} ({ex[2]})')
+              
+              # Contar total de ejercicios
+              cur.execute("SELECT COUNT(*) FROM Exercise")
+              total = cur.fetchone()[0]
+              print(f'   Total exercises in DB: {total}')
+              
+              cur.close()
+              conn.close()
+              
+              print('✅ Keep-alive ping completed successfully')
+              
+          except Exception as e:
+              print(f'❌ Database ping failed: {e}')
+              exit(1)
+          PYEOF
